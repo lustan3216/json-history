@@ -807,4 +807,33 @@ describe('test history', () => {
       })
     })
   })
+
+  describe('array tree',() => {
+    let history
+
+    beforeEach(() => {
+      history = new JsonHistory({
+        tree: [1, 2, 3]
+      })
+    })
+
+    test('[0] = 123', () => {
+      history.record({
+        path: '[0]',
+        value: 123
+      })
+
+      expect(history.tree).toEqual([123,2,3])
+    })
+
+    test('[0] = 123 insert', () => {
+      history.record({
+        path: '[0]',
+        value: 123,
+        insertArray: true
+      })
+
+      expect(history.tree).toEqual([123, 1,2,3])
+    })
+  })
 })
