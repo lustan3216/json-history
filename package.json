@@ -1,14 +1,19 @@
 {
+  "name": "json-storer",
   "license": "MIT",
+  "version": "0.1.0",
   "scripts": {
     "test": "jest"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.7",
+    "@babel/core": "^7`.7.7",
     "@babel/preset-env": "^7.7.7",
     "@types/jest": "^24.0.24",
     "@types/node": "^13.1.0",
     "babel-jest": "^24.9.0",
     "jest": "^24.9.0"
+  },
+  "dependencies": {
+    "jsondiffpatch": "^0.4.1"
   }
 }

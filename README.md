@@ -1,8 +1,7 @@
-# Kata Node.js Starter Project
+# Json Store
 
-__A starter project for coding kata in Node.js.__
+A plugin can `redo`, `undo` nested JSON data.
 
-Minimal Node.js Starter for coding katas.
 
 ## Tools
 - Jest for testing
