@@ -2,25 +2,52 @@
 
 A plugin can `redo`, `undo` nested JSON data.
 
+Including [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
 
-## Tools
-- Jest for testing
-- Babel to enable nice things like `import` in Node
+```javascript
+const tree = {
+  1: [1, 3],
+  a: [{}, { 1: 3 }],
+  b: { c: 5, d: { e: 6 }}
+}
 
-## Getting Started
+const history = new JsonHistory({
+  tree: JSON.parse(JSON.stringify(tree))
+})
 
-### Install dependencies
+history.record({
+  path: '1[4]',
+  value: {},
+  insertArray: true
+})
 
-Before starting to code, don't forget to install all dependencies.
+expect(history.tree).toEqual({
+  1: [1, 3, null, null, {}],
+  a: [{}, { 1: 3 }],
+  b: { c: 5, d: { e: 6 }}
+})
 
-```shell
-yarn
-```
+history.record([
+  {
+    path: '1[4]',
+    value: [],
+    insertArray: true
+  },
+  {
+    path: '1[5]',
+    value: [1, 2, 3]
+  }
+])
 
-### Running tests
+expect(history.tree).toEqual({
+  1: [1, 3, null, null, [], [1, 2, 3]],
+  a: [{}, { 1: 3 }],
+  b: { c: 5, d: { e: 6 }}
+})
 
-Run all tests once:
+expect(history.deltas.length).toEqual(2)
 
-```shell
-npm test
+history.undo()
+history.undo()
+expect(history.tree).toEqual(tree)
 ```
