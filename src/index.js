@@ -75,7 +75,7 @@ export default class JsonHistory {
       this.jsonDiffPatch.patch(this.tree, delta)
     })
 
-    this.callback.onRedo()
+    this.callback.onRedo(this)
     return this.tree
   }
 
@@ -88,7 +88,7 @@ export default class JsonHistory {
     })
 
     this.currentIndex++
-    this.callback.onUndo()
+    this.callback.onUndo(this)
     return this.tree
   }
 }
