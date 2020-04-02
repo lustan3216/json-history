@@ -1,5 +1,5 @@
 import jsonDiffPatch from './jsonDiffPatch'
-import { toArray, isUndefined, cloneJson } from './utils'
+import { toArray, isUndefined, isArray } from './utils'
 import { createDelta } from './createDelta'
 
 export default class JsonHistory {
@@ -24,35 +24,47 @@ export default class JsonHistory {
     return this.deltas[this.currentIndex]
   }
 
-  delete(rows) {
-    const ensureIsArray = toArray(rows)
-    ensureIsArray.forEach(row => (row.value = undefined))
-    return this.record(rows)
-  }
-
-  record(rows, newValue) {
-    const group = []
-    const ensureIsArray = toArray(rows)
-
-    if (!isUndefined(newValue)) {
-      ensureIsArray.forEach(row => (row.value = newValue))
+  delete(histories) {
+    if (isArray(histories)) {
+      histories.forEach(history => (history.value = undefined))
     }
 
-    ensureIsArray.forEach(row => {
+    return this.record(histories)
+  }
 
-      const delta = createDelta(this.jsonDiffPatch, this.tree, row)
+  record(histories, newValue) {
+    const group = []
+
+    if (isArray(histories)) {
+
+      if (!isUndefined(newValue)) {
+        histories.forEach(history => (history.value = newValue))
+      }
+
+      histories.forEach(history => {
+        const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+
+        if (delta) {
+          group.unshift(delta)
+          this.jsonDiffPatch.patch(this.tree, delta)
+        }
+      })
+
+    } else {
+      const delta = this.jsonDiffPatch.diff(this.tree, histories)
 
       if (delta) {
-        group.unshift(delta)
-        this.jsonDiffPatch.patch(this.tree, delta)
+        this.tree = histories
+        group.push(delta)
       }
-    })
+    }
 
     if (group.length) {
       this.deltas.unshift(group)
       this.callback.onRecord(this)
-      return this.tree
     }
+
+    return this.tree
   }
 
   redo() {

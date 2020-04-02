@@ -3,14 +3,14 @@ import { cloneJson } from '../src/utils'
 
 const tree = {
   1: [1, 3],
-  a: [{}, { 1: 3 }],
-  b: { c: 5, d: { e: 6 }}
+  a: [{}, {1: 3}],
+  b: {c: 5, d: {e: 6}}
 }
 
 describe('test history', () => {
   let history
 
-  describe('.record 0 delta', () => {
+  describe('array .record 0 delta', () => {
     let history
 
     beforeEach(() => {
@@ -44,8 +44,8 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -61,20 +61,22 @@ describe('test history', () => {
     })
 
     test('b.c.g = undefined', () => {
-      history.record({
-        path: 'b.c.g',
-        value: undefined
-      })
+      history.record([
+        {
+          path: 'b.c.g',
+          value: undefined
+        }
+      ])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
   })
 
-  describe('.record 1 delta', () => {
+  describe('array .record 1 delta', () => {
     let history
 
     beforeEach(() => {
@@ -93,179 +95,182 @@ describe('test history', () => {
     })
 
     test('1 = {}', () => {
-      history.record({
+      history.record([{
         path: '1',
         value: {}
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: {},
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1] = { f: 5 }', () => {
-      history.record({
+      history.record([{
         path: 'a[1]',
-        value: { f: 5 }
-      })
+        value: {f: 5}
+      }])
+
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { f: 5 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {f: 5}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1][3] = 5', () => {
-      history.record({
+      history.record([{
         path: 'a[1][3]',
         value: 5
-      })
+      }])
       expect(history.tree).toEqual({
         1: [1, 3],
         a: [{}, [null, null, null, 5]],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[4][1] = 5', () => {
-      history.record({
+      history.record([{
         path: 'a[4][1]',
         value: 5
-      })
+      }])
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }, null, null, [null, 5]],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}, null, null, [null, 5]],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[2].3 = [3, 4, 5]', () => {
-      history.record({
+      history.record([{
         path: 'a[2].3',
         value: [3, 4, 5]
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }, { 3: [3, 4, 5] }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}, {3: [3, 4, 5]}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1][1] = { f: 5 }', () => {
-      history.record({
+      history.record([{
         path: 'a[1][1]',
-        value: { f: 5 }
-      })
+        value: {f: 5}
+      }])
+
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, [null, { f: 5 }]],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, [null, {f: 5}]],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1][1]a = { f: 5 }', () => {
-      history.record({
+      history.record([{
         path: 'a[1][1]a',
-        value: { f: 5 }
-      })
+        value: {f: 5}
+      }])
+
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, [null, { a: { f: 5 }}]],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, [null, {a: {f: 5}}]],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('1 = 2', () => {
-      history.record({
+      history.record([{
         path: 1,
         value: 2
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: 2,
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('1.a.b = 2', () => {
-      history.record({
+      history.record([{
         path: '1.a.b',
         value: 2
-      })
+      }])
 
       expect(history.tree).toEqual({
-        1: { a: { b: 2 }},
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        1: {a: {b: 2}},
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('1.a = 2', () => {
-      history.record({
+      history.record([{
         path: '1.a',
         value: 2
-      })
+      }])
 
       expect(history.tree).toEqual({
-        1: { a: 2 },
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        1: {a: 2},
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('1[0].a = 5', () => {
-      history.record({
+      history.record([{
         path: '1[0].a',
         value: 5
-      })
+      }])
 
       expect(history.tree).toEqual({
-        1: [{ a: 5 }, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        1: [{a: 5}, 3],
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[0].a = 5', () => {
-      history.record({
+      history.record([{
         path: 'a[0].a',
         value: 5
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{ a: 5 }, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{a: 5}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('b.d = { f: 5 }', () => {
-      history.record({
+      history.record([{
         path: 'b.d',
-        value: { f: 5 }
-      })
+        value: {f: 5}
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { f: 5 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {f: 5}}
       })
     })
 
     test('b.d.c.g = 3', () => {
-      history.record({
+      history.record([{
         path: 'b.d.c.g',
         value: 3
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6, c: { g: 3 }}}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6, c: {g: 3}}}
       })
     })
 
@@ -273,7 +278,7 @@ describe('test history', () => {
       history.record([
         {
           path: 'b.d',
-          value: { f: 5 }
+          value: {f: 5}
         },
         {
           path: 'b.d.c.g',
@@ -283,8 +288,8 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { f: 5, c: { g: 3 }}}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {f: 5, c: {g: 3}}}
       })
     })
 
@@ -298,7 +303,7 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -313,7 +318,7 @@ describe('test history', () => {
       expect(history.tree).toEqual({
         1: [1, 3],
         a: [{}],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -328,7 +333,7 @@ describe('test history', () => {
       expect(history.tree).toEqual({
         1: [1, 3],
         a: [{}, {}],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -342,8 +347,8 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -358,20 +363,20 @@ describe('test history', () => {
       expect(history.tree).toEqual({
         1: [1, 3],
         a: [1, 2, 3],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1].3 = [3, 4, 5]', () => {
-      history.record({
+      history.record([{
         path: 'a[1].3',
         value: [3, 4, 5]
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3, 3: [3, 4, 5] }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3, 3: [3, 4, 5]}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -392,9 +397,9 @@ describe('test history', () => {
       ])
 
       expect(history.tree).toEqual({
-        1: { b: { c: [3, 4, 5] }},
-        a: { b: { c: [3, 4, 5] }},
-        b: { c: 5, d: { e: 6 }, b: { c: [3, 4, 5] }}
+        1: {b: {c: [3, 4, 5]}},
+        a: {b: {c: [3, 4, 5]}},
+        b: {c: 5, d: {e: 6}, b: {c: [3, 4, 5]}}
       })
     })
 
@@ -408,13 +413,13 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{ b: [3, 4, 5] }, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{b: [3, 4, 5]}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
   })
 
-  describe('.delete', () => {
+  describe('array .delete', () => {
     let history
 
     beforeEach(() => {
@@ -435,56 +440,59 @@ describe('test history', () => {
     })
 
     test('1 = undefined', () => {
-      history.delete({
+      history.delete([{
         path: '1'
-      })
+      }])
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[1] = undefined', () => {
-      history.delete({
+      history.delete([{
         path: 'a[1]',
         value: undefined
-      })
+      }])
+
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
         1: [1, 3],
         a: [{}],
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('b.d = undefined', () => {
-      history.delete({
+      history.delete([{
         path: 'b.d'
-      })
+      }])
+
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5 }
+        a: [{}, {1: 3}],
+        b: {c: 5}
       })
     })
 
     test('b.d = 123 delete method will ensure value is 123', () => {
-      history.delete({
+      history.delete([{
         path: 'b.d',
         value: 123
-      })
+      }])
+
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5 }
+        a: [{}, {1: 3}],
+        b: {c: 5}
       })
     })
   })
 
-  describe('.record with value', () => {
+  describe('array .record with value', () => {
     let history
 
     beforeEach(() => {
@@ -498,18 +506,18 @@ describe('test history', () => {
         tree: JSON.parse(JSON.stringify(tree))
       })
 
-      history.delete({
+      history.delete([{
         path: 'b.d'
-      })
+      }])
 
       const history1 = new JsonHistory({
         tree: JSON.parse(JSON.stringify(tree))
       })
 
-      history1.record({
+      history1.record([{
         path: 'b.d',
         value: undefined
-      })
+      }])
 
       expect(history.tree).toEqual(history1.tree)
     })
@@ -538,21 +546,21 @@ describe('test history', () => {
     })
   })
 
-  test('.redo .undo', () => {
+  test('array .redo .undo', () => {
     const history = new JsonHistory({
       tree: JSON.parse(JSON.stringify(tree))
     })
 
-    history.delete({
+    history.delete([{
       path: 'b.d.e',
       value: 123
-    })
+    }])
 
     expect(history.deltas.length).toEqual(1)
     expect(history.tree).toEqual({
       1: [1, 3],
-      a: [{}, { 1: 3 }],
-      b: { c: 5, d: {}}
+      a: [{}, {1: 3}],
+      b: {c: 5, d: {}}
     })
 
     history.record([
@@ -584,33 +592,33 @@ describe('test history', () => {
     expect(history.deltas.length).toEqual(2)
     expect(history.tree).toEqual({
       1: [1, 3],
-      a: { c: { t: [1, 3, 5, {}] }, g: {}},
-      b: { c: [1, 2, 3, { a: 3 }], d: {}}
+      a: {c: {t: [1, 3, 5, {}]}, g: {}},
+      b: {c: [1, 2, 3, {a: 3}], d: {}}
     })
 
-    history.record({
+    history.record([{
       path: '1',
-      value: [{ a: {}}, {}]
-    })
+      value: [{a: {}}, {}]
+    }])
     expect(history.deltas.length).toEqual(3)
     expect(history.tree).toEqual({
-      1: [{ a: {}}, {}],
-      a: { c: { t: [1, 3, 5, {}] }, g: {}},
-      b: { c: [1, 2, 3, { a: 3 }], d: {}}
+      1: [{a: {}}, {}],
+      a: {c: {t: [1, 3, 5, {}]}, g: {}},
+      b: {c: [1, 2, 3, {a: 3}], d: {}}
     })
 
     history.undo()
     expect(history.tree).toEqual({
       1: [1, 3],
-      a: { c: { t: [1, 3, 5, {}] }, g: {}},
-      b: { c: [1, 2, 3, { a: 3 }], d: {}}
+      a: {c: {t: [1, 3, 5, {}]}, g: {}},
+      b: {c: [1, 2, 3, {a: 3}], d: {}}
     })
 
     history.undo()
     expect(history.tree).toEqual({
       1: [1, 3],
-      a: [{}, { 1: 3 }],
-      b: { c: 5, d: {}}
+      a: [{}, {1: 3}],
+      b: {c: 5, d: {}}
     })
 
     history.undo()
@@ -624,13 +632,13 @@ describe('test history', () => {
     history.redo()
     history.redo()
     expect(history.tree).toEqual({
-      1: [{ a: {}}, {}],
-      a: { c: { t: [1, 3, 5, {}] }, g: {}},
-      b: { c: [1, 2, 3, { a: 3 }], d: {}}
+      1: [{a: {}}, {}],
+      a: {c: {t: [1, 3, 5, {}]}, g: {}},
+      b: {c: [1, 2, 3, {a: 3}], d: {}}
     })
   })
 
-  describe('.record array inset', () => {
+  describe('array .record array inset', () => {
     let history
 
     beforeEach(() => {
@@ -640,46 +648,46 @@ describe('test history', () => {
     })
 
     test('1[1] = {}', () => {
-      history.record({
+      history.record([{
         path: '1[1]',
         value: {},
         insertArray: true
-      })
+      }])
 
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
         1: [1, {}, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('a[5] = []', () => {
-      history.record({
+      history.record([{
         path: 'a[5]',
         value: [],
         insertArray: true
-      })
+      }])
 
       expect(history.deltas.length).toEqual(1)
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }, null, null, null, []],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}, null, null, null, []],
+        b: {c: 5, d: {e: 6}}
       })
     })
 
     test('complicated inset', () => {
-      history.record({
+      history.record([{
         path: '1[4]',
         value: {},
         insertArray: true
-      })
+      }])
 
       expect(history.tree).toEqual({
         1: [1, 3, null, null, {}],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
 
       history.record([
@@ -696,8 +704,8 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3, null, null, [], [1, 2, 3]],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}}
       })
 
       expect(history.deltas.length).toEqual(2)
@@ -705,6 +713,39 @@ describe('test history', () => {
       history.undo()
       history.undo()
       expect(history.tree).toEqual(tree)
+    })
+  })
+
+  describe('array tree', () => {
+    let history
+
+    beforeEach(() => {
+      history = new JsonHistory({
+        tree: [1, 2, 3]
+      })
+    })
+
+    test('[0] = 123', () => {
+      history.record([
+        {
+          path: '[0]',
+          value: 123
+        }
+      ])
+
+      expect(history.tree).toEqual([123, 2, 3])
+    })
+
+    test('[0] = 123 insert', () => {
+      history.record([
+        {
+          path: '[0]',
+          value: 123,
+          insertArray: true
+        }
+      ])
+
+      expect(history.tree).toEqual([123, 1, 2, 3])
     })
   })
 
@@ -727,10 +768,12 @@ describe('test history', () => {
     })
 
     test('a.length.length = {}', () => {
-      history.record({
-        path: 'a.length.length',
-        value: {}
-      })
+      history.record([
+        {
+          path: 'a.length.length',
+          value: {}
+        }
+      ])
 
       expect(history.tree).toEqual({
         1: [1, 3],
@@ -739,7 +782,7 @@ describe('test history', () => {
             length: {}
           }
         },
-        b: { c: 5, d: { e: 6 }}
+        b: {c: 5, d: {e: 6}}
       })
     })
 
@@ -750,7 +793,7 @@ describe('test history', () => {
         {
           path: 'a.length.length',
           value: {}
-        },{
+        }, {
           path: 'b.e',
           value: date
         }
@@ -760,10 +803,10 @@ describe('test history', () => {
         1: [1, 3],
         a: {
           length: {
-            length: { }
+            length: {}
           }
         },
-        b: { c: 5, d: { e: 6 }, e: date}
+        b: {c: 5, d: {e: 6}, e: date}
       })
     })
 
@@ -782,8 +825,8 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }, e: text + 123 + text}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}, e: text + 123 + text}
       })
     })
 
@@ -802,13 +845,13 @@ describe('test history', () => {
 
       expect(history.tree).toEqual({
         1: [1, 3],
-        a: [{}, { 1: 3 }],
-        b: { c: 5, d: { e: 6 }, e: [null, text + 123 + text]}
+        a: [{}, {1: 3}],
+        b: {c: 5, d: {e: 6}, e: [null, text + 123 + text]}
       })
     })
   })
 
-  describe('array tree',() => {
+  describe('object state', () => {
     let history
 
     beforeEach(() => {
@@ -817,23 +860,56 @@ describe('test history', () => {
       })
     })
 
-    test('[0] = 123', () => {
+    test('.record 1', () => {
       history.record({
         path: '[0]',
         value: 123
       })
 
-      expect(history.tree).toEqual([123,2,3])
+      expect(history.tree).toEqual({
+        path: '[0]',
+        value: 123
+      })
     })
 
-    test('[0] = 123 insert', () => {
+    test('.record 2', () => {
       history.record({
         path: '[0]',
         value: 123,
         insertArray: true
       })
 
-      expect(history.tree).toEqual([123, 1,2,3])
+      expect(history.tree).toEqual({
+        path: '[0]',
+        value: 123,
+        insertArray: true
+      })
+    })
+
+    test('.delete 1', () => {
+      history.delete({
+        path: '[0]',
+        value: 123
+      })
+
+      expect(history.tree).toEqual({
+        path: '[0]',
+        value: 123
+      })
+    })
+
+    test('.delete 2', () => {
+      history.delete({
+        path: '[0]',
+        value: 123,
+        insertArray: true
+      })
+
+      expect(history.tree).toEqual({
+        path: '[0]',
+        value: 123,
+        insertArray: true
+      })
     })
   })
 })
