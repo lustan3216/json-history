@@ -4,7 +4,7 @@ import { createDelta } from './createDelta'
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}}) {
+  constructor({ tree = {}, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
