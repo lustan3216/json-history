@@ -1,16 +1,17 @@
 import jsonDiffPatch from './jsonDiffPatch'
-import { toArray, isUndefined, isArray } from './utils'
+import { isUndefined, isArray } from './utils'
 import { createDelta } from './createDelta'
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}} = {}) {
+  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
     this.deltas = backUpDeltas
     this.currentIndex = 0
     this.tree = tree
+    this.steps = steps
     this.jsonDiffPatch = jsonDiffPatch.create(jsonDiffPatchOptions)
     this.callback = {
       onRecord() {},
@@ -45,6 +46,9 @@ export default class JsonHistory {
         const delta = createDelta(this.jsonDiffPatch, this.tree, history)
 
         if (delta) {
+          if (this.deltas > this.steps) {
+            group.pop()
+          }
           group.unshift(delta)
           this.jsonDiffPatch.patch(this.tree, delta)
         }
