@@ -52,7 +52,7 @@ export default class JsonHistory {
           }
           group.unshift(delta)
           this.jsonDiffPatch.patch(this.tree, delta)
-          this.callback.onEachRecord()
+          this.callback.onEachRecord(delta)
         }
       })
 
