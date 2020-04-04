@@ -15,7 +15,7 @@ export default class JsonHistory {
     this.jsonDiffPatch = jsonDiffPatch.create(jsonDiffPatchOptions)
     this.callback = {
       onRecord() {},
-      onEachRecord() {},
+      onEachPatch() {},
       onUndo() {},
       onRedo() {},
       ...callback
@@ -52,7 +52,7 @@ export default class JsonHistory {
           }
           group.unshift(delta)
           this.jsonDiffPatch.patch(this.tree, delta)
-          this.callback.onEachRecord(history, delta)
+          this.callback.onEachPatch(delta)
         }
       })
 
@@ -79,6 +79,7 @@ export default class JsonHistory {
 
     this.currentDeltaGroup.reverse().forEach(delta => {
       this.jsonDiffPatch.patch(this.tree, delta)
+      this.callback.onEachPatch(delta)
     })
 
     this.callback.onRedo(this)
@@ -91,6 +92,7 @@ export default class JsonHistory {
 
     this.currentDeltaGroup.forEach(delta => {
       this.jsonDiffPatch.unpatch(this.tree, delta)
+      this.callback.onEachPatch(delta)
     })
 
     this.currentIndex++
