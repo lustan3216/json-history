@@ -63,7 +63,9 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               final[key] = [oldValue, 0, 0]
               markAsArrayType(final)
             } else {
-              if (insertArray) {
+              if (oldValue === newValue) {
+                stop()
+              } else if (insertArray) {
                 final[key] = [newValue]
               } else {
                 final[key] = newDeltaIfBothString([oldValue, newValue])
@@ -98,7 +100,9 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               if (isAnObjectAndKeyMatch(isArrayKeyNext, oldValue)) {
                 final[key] = {}
               } else {
-                if (isArray(currentTree)) {
+                if (oldValue === newValue) {
+                  stop()
+                } else if (isArray(currentTree)) {
                   final[key] = newDeltaIfBothString([
                     oldValue,
                     createRestOfValue(arrayPath, index, newValue)
@@ -129,9 +133,16 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
             } else {
               // 'a.b = 2'  更新
               // 'a.b.c = 2'  更新
-              if (isArray(oldValue) && isArray(newValue)) {
+              if (oldValue === newValue) {
+                stop()
+              } else if (isArray(oldValue) && isArray(newValue)) {
                 // 'a = oldValue newArray [1,2,3] 直接用diff生delta
-                final[key] = jsonDiffPatch.diff(oldValue, newValue)
+                const diff = jsonDiffPatch.diff(oldValue, newValue)
+                if (diff) {
+                  final[key] = diff
+                } else {
+                  stop()
+                }
               } else {
                 final[key] = newDeltaIfBothString([oldValue, newValue])
               }
@@ -139,7 +150,9 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
           }
         } else {
           if (isUndefined(oldValue)) {
-            if (isUndefined(newValue)) {
+            if (oldValue === newValue) {
+              stop()
+            } else if (isUndefined(newValue)) {
               // 要刪除東西，但就值也是空的所以break
               stop()
             } else {
@@ -155,7 +168,9 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
             } else {
               // 這裡已知之後都會跑步成功，因為array 跟object不能合併，也因為下一層無法更新上層的資料結構，
               // 所以這裡直接算完結束
-              if (isUndefined(newValue)) {
+              if (oldValue === newValue) {
+                stop()
+              } else if (isUndefined(newValue)) {
                 stop()
               } else {
                 final[key] = newDeltaIfBothString([
