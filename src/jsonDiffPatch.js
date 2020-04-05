@@ -1,18 +1,3 @@
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -175,7 +160,7 @@ var Pipe = function () {
           this.log('filter: ' + filter.filterName);
         }
         filter(context);
-        if ((typeof context === 'undefined' ? 'undefined' : _typeof(context)) === 'object' && context.exiting) {
+        if ((typeof context === 'undefined' ? 'undefined' : typeof(context)) === 'object' && context.exiting) {
           context.exiting = false;
           break;
         }
@@ -351,6 +336,24 @@ var Context = function () {
       child.next = this;
       return this;
     }
+  }, {
+    key: 'set',
+    value: function set$$1(key, value) {
+      if (this.options.setter) {
+        this.options.setter(this.left, key, value);
+      } else {
+        this.left[key] = value;
+      }
+    }
+  }, {
+    key: 'delete',
+    value: function _delete(key) {
+      if (this.options.deleter) {
+        this.options.deleter(this.left, key);
+      } else {
+        delete this.left[key];
+      }
+    }
   }]);
   return Context;
 }();
@@ -365,7 +368,7 @@ function cloneRegExp(re) {
 }
 
 function clone(arg) {
-  if ((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) !== 'object') {
+  if ((typeof arg === 'undefined' ? 'undefined' : typeof(arg)) !== 'object') {
     return arg;
   }
   if (arg === null) {
@@ -406,12 +409,12 @@ var DiffContext = function (_Context) {
   createClass(DiffContext, [{
     key: 'setResult',
     value: function setResult(result) {
-      if (this.options.cloneDiffValues && (typeof result === 'undefined' ? 'undefined' : _typeof(result)) === 'object') {
+      if (this.options.cloneDiffValues && (typeof result === 'undefined' ? 'undefined' : typeof(result)) === 'object') {
         var clone$$1 = typeof this.options.cloneDiffValues === 'function' ? this.options.cloneDiffValues : clone;
-        if (_typeof(result[0]) === 'object') {
+        if (typeof(result[0]) === 'object') {
           result[0] = clone$$1(result[0]);
         }
-        if (_typeof(result[1]) === 'object') {
+        if (typeof(result[1]) === 'object') {
           result[1] = clone$$1(result[1]);
         }
       }
@@ -477,8 +480,8 @@ var diffFilter = function trivialMatchesDiffFilter(context) {
   if (typeof context.left === 'function' || typeof context.right === 'function') {
     throw new Error('functions are not supported');
   }
-  context.leftType = context.left === null ? 'null' : _typeof(context.left);
-  context.rightType = context.right === null ? 'null' : _typeof(context.right);
+  context.leftType = context.left === null ? 'null' : typeof(context.left);
+  context.rightType = context.right === null ? 'null' : typeof(context.right);
   if (context.leftType !== context.rightType) {
     context.setResult([context.left, context.right]).exit();
     return;
@@ -651,9 +654,11 @@ var collectChildrenPatchFilter = function collectChildrenPatchFilter(context) {
   for (var index = 0; index < length; index++) {
     child = context.children[index];
     if (Object.prototype.hasOwnProperty.call(context.left, child.childName) && child.result === undefined) {
-      delete context.left[child.childName];
+      context.delete(child.childName);
+      // delete context.left[child.childName];
     } else if (context.left[child.childName] !== child.result) {
-      context.left[child.childName] = child.result;
+      context.set(child.childName, child.result);
+      // context.left[child.childName] = child.result;
     }
   }
   context.setResult(context.left).exit();
@@ -817,7 +822,7 @@ function matchItems(array1, array2, index1, index2, context) {
   if (value1 === value2) {
     return true;
   }
-  if ((typeof value1 === 'undefined' ? 'undefined' : _typeof(value1)) !== 'object' || (typeof value2 === 'undefined' ? 'undefined' : _typeof(value2)) !== 'object') {
+  if ((typeof value1 === 'undefined' ? 'undefined' : typeof(value1)) !== 'object' || (typeof value2 === 'undefined' ? 'undefined' : typeof(value2)) !== 'object') {
     return false;
   }
   var objectHash = context.objectHash;
@@ -1102,7 +1107,8 @@ var collectChildrenPatchFilter$1 = function collectChildrenPatchFilter(context) 
   var child = void 0;
   for (var index = 0; index < length; index++) {
     child = context.children[index];
-    context.left[child.childName] = child.result;
+    context.set(child.childName, child.result);
+    // context.left[child.childName] = child.result;
   }
   context.setResult(context.left).exit();
 };
@@ -3611,6 +3617,13 @@ function unpatch() {
     defaultInstance = new DiffPatcher();
   }
   return defaultInstance.unpatch.apply(defaultInstance, arguments);
+}
+
+function reverse() {
+  if (!defaultInstance) {
+    defaultInstance = new DiffPatcher();
+  }
+  return defaultInstance.reverse.apply(defaultInstance, arguments);
 }
 
 export default {
