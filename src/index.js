@@ -26,6 +26,22 @@ export default class JsonHistory {
     return this.deltas[this.currentIndex]
   }
 
+  recordsMerge(fn) {
+    const oldLength = this.deltas.length
+    fn()
+    const newLength = this.deltas.length
+    const diff = newLength - oldLength
+    //       [1,2,3,4,5]
+    // [1,2,3,1,2,3,4,5]
+    if (diff > 1) {
+      let newGroup = []
+      for (let i = 0; i < diff; i++) {
+        newGroup = newGroup.concat(this.deltas[i])
+      }
+      this.deltas = [newGroup, ...this.deltas.slice(diff)]
+    }
+  }
+
   delete(histories) {
     if (isArray(histories)) {
       histories.forEach(history => (history.value = undefined))
