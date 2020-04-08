@@ -4,11 +4,10 @@ import { createDelta } from './createDelta'
 
 export default class JsonHistory {
 
-  constructor({ name, tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter} = {}) {
+  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
-    this.name = name
     this.deltas = backUpDeltas
     this.currentIndex = 0
     this.tree = tree
