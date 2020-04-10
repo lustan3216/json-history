@@ -63,7 +63,8 @@ export default class JsonHistory {
         const delta = createDelta(this.jsonDiffPatch, this.tree, history)
 
         if (delta) {
-          if (this.deltas > this.steps) {
+          this.cleanOldUndo()
+          if (this.deltas.length > this.steps) {
             group.pop()
           }
           group.unshift(delta)
@@ -87,6 +88,13 @@ export default class JsonHistory {
     }
 
     return this.tree
+  }
+
+  cleanOldUndo() {
+    if (this.currentIndex > 0) {
+      this.deltas = this.deltas.slice(this.currentIndex)
+      this.currentIndex = 0
+    }
   }
 
   redo() {
