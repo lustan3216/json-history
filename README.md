@@ -1,3 +1,5 @@
+RegExp.prototype.toJSON = RegExp.prototype.toString;
+
 # Json Store
 
 A plugin can `redo`, `undo` nested JSON data.

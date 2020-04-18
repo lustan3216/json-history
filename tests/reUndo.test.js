@@ -44,15 +44,7 @@ describe('.redo undo', () => {
 
     expect(history.deltas.length).toEqual(1)
 
-    expect(history.tree).toEqual({
-      1: [1, 3],
-      a: {
-        length: {
-          length: {}
-        }
-      },
-      b: {c: 5, d: {e: 6}}
-    })
+    expect(history.tree).toEqual(tree)
   })
 
   test('array .redo .undo', () => {

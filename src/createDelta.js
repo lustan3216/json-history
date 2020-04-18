@@ -4,10 +4,8 @@ import {
   pathStringSplit,
   toNormalizedPath
 } from "./path"
-import { arrayEmptyToNull, cloneJson, isAnObjectAndKeyMatch, isUndefined, isArray, isString } from "./utils"
+import { arrayEmptyToNull, cloneJson, isAnObjectAndKeyMatch, isUndefined, isArray, isString, isPlainObject } from "./utils"
 import { stop, aBugHere, done, DONE, STOP } from './error'
-
-
 
 export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray = false }) {
   const newValue = cloneJson(value)
@@ -31,8 +29,8 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
         Object.assign(final, delta)
       }
 
-      function newDeltaIfBothString([ _old, _new ]) {
-        if (isString(_old) && isString(_new)) {
+      function deepDiffDelta([ _old, _new ]) {
+        if (isString(_old) && isString(_new) || isPlainObject(_old) && isPlainObject(_new) || isArray(_old) && isArray(_new)) {
           return jsonDiffPatch.diff(_old, _new)
         } else {
           return [_old, _new]
@@ -68,7 +66,7 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               } else if (insertArray) {
                 final[key] = [newValue]
               } else {
-                final[key] = newDeltaIfBothString([oldValue, newValue])
+                final[key] = deepDiffDelta([oldValue, newValue])
               }
               markAsArrayType(final)
             }
@@ -103,7 +101,7 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
                 if (oldValue === newValue) {
                   stop()
                 } else if (isArray(currentTree)) {
-                  final[key] = newDeltaIfBothString([
+                  final[key] = deepDiffDelta([
                     oldValue,
                     createRestOfValue(arrayPath, index, newValue)
                   ])
@@ -144,7 +142,7 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
                   stop()
                 }
               } else {
-                final[key] = newDeltaIfBothString([oldValue, newValue])
+                final[key] = deepDiffDelta([oldValue, newValue])
               }
             }
           }
@@ -156,7 +154,7 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               // 要刪除東西，但就值也是空的所以break
               stop()
             } else {
-              final[key] = newDeltaIfBothString([
+              final[key] = deepDiffDelta([
                 oldValue,
                 createRestOfValue(arrayPath, index, newValue)
               ])
@@ -173,7 +171,7 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               } else if (isUndefined(newValue)) {
                 stop()
               } else {
-                final[key] = newDeltaIfBothString([
+                final[key] = deepDiffDelta([
                   oldValue,
                   createRestOfValue(arrayPath, index, newValue)
                 ])
