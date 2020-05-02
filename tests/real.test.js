@@ -50,4 +50,42 @@ describe('.recordMerge', () => {
       }
     })
   })
+
+  test('complicated path', () => {
+    history.record([
+      {
+        path: 'a.$w[%]q.1[!33][#2][1].#3[12:3]:3.:6',
+        value: 1
+      }
+    ])
+
+    expect(history.deltas.length).toEqual(1)
+
+    expect(history.tree).toEqual({
+      "1": [],
+      "a": {
+        "$w": {
+          "[%]q": {
+            "1": {
+              "[!33]": {
+                "[#2]": [
+                  null,
+                  {
+                    "#3": {
+                      "[12:3]:3": {
+                        ":6": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "length": {
+          "length": {}
+        }
+      }
+    })
+  })
 })

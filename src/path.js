@@ -5,7 +5,7 @@ export function pathStringSplit(path) {
   return path
     .toString()
     .replace(/\s/g)
-    .match(/[\w|\d]+(?=\.|\[)?|\[\d+\]/g)
+    .split(/(?=\[)|\./)
 }
 
 export function isArrayKeyToBooleanArray(path) {
