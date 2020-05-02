@@ -11,7 +11,7 @@ describe('.recordMerge', () => {
 
   beforeEach(() => {
     history = new JsonHistory({
-      tree
+      tree: JSON.parse(JSON.stringify(tree))
     })
   })
 
@@ -62,28 +62,38 @@ describe('.recordMerge', () => {
     expect(history.deltas.length).toEqual(1)
 
     expect(history.tree).toEqual({
-      "1": [],
+      "1": [
+        1,
+        3
+      ],
       "a": {
         "$w": {
-          "[%]q": {
-            "1": {
-              "[!33]": {
-                "[#2]": [
-                  null,
-                  {
-                    "#3": {
-                      "[12:3]:3": {
-                        ":6": 1
+          "[%]": {
+            "q": {
+              "1": {
+                "[!33]": {
+                  "[#2]": [
+                    null,
+                    {
+                      "#3": {
+                        "[12:3]": {
+                          ":3": {
+                            ":6": 1
+                          }
+                        }
                       }
                     }
-                  }
-                ]
+                  ]
+                }
               }
             }
           }
-        },
-        "length": {
-          "length": {}
+        }
+      },
+      "b": {
+        "c": 5,
+        "d": {
+          "e": 6
         }
       }
     })
