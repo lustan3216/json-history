@@ -634,24 +634,20 @@ describe('test history', () => {
     })
 
     test('[0] = 123', () => {
-      history.record([
-        {
-          path: '[0]',
-          value: 123
-        }
-      ])
+      history.record({
+        path: '[0]',
+        value: 123
+      })
 
       expect(history.tree).toEqual([123, 2, 3])
     })
 
     test('[0] = 123 insert', () => {
-      history.record([
-        {
-          path: '[0]',
-          value: 123,
-          insertArray: true
-        }
-      ])
+      history.record({
+        path: '[0]',
+        value: 123,
+        insertArray: true
+      })
 
       expect(history.tree).toEqual([123, 1, 2, 3])
     })
@@ -676,12 +672,10 @@ describe('test history', () => {
     })
 
     test('a.length.length = {}', () => {
-      history.record([
-        {
-          path: 'a.length.length',
-          value: {}
-        }
-      ])
+      history.record({
+        path: 'a.length.length',
+        value: {}
+      })
 
       expect(history.tree).toEqual({
         1: [1, 3],
@@ -759,7 +753,7 @@ describe('test history', () => {
     })
   })
 
-  describe('object state', () => {
+  describe('snapShot state', () => {
     let history
 
     beforeEach(() => {
@@ -768,8 +762,8 @@ describe('test history', () => {
       })
     })
 
-    test('.record 1', () => {
-      history.record({
+    test('.snapShot 1', () => {
+      history.snapShot({
         path: '[0]',
         value: 123
       })
@@ -780,8 +774,8 @@ describe('test history', () => {
       })
     })
 
-    test('.record 2', () => {
-      history.record({
+    test('.snapShot 2', () => {
+      history.snapShot({
         path: '[0]',
         value: 123,
         insertArray: true
@@ -794,8 +788,8 @@ describe('test history', () => {
       })
     })
 
-    test('.delete 1', () => {
-      history.delete({
+    test('.snapShot 1', () => {
+      history.snapShot({
         path: '[0]',
         value: 123
       })
@@ -806,8 +800,8 @@ describe('test history', () => {
       })
     })
 
-    test('.delete 2', () => {
-      history.delete({
+    test('.snapShot 2', () => {
+      history.snapShot({
         path: '[0]',
         value: 123,
         insertArray: true

@@ -1,5 +1,5 @@
 import jsonDiffPatch from './jsonDiffPatch'
-import { isUndefined, isArray } from './utils'
+import { isUndefined, toArray } from './utils'
 import { createDelta } from './createDelta'
 
 export default class JsonHistory {
@@ -43,43 +43,48 @@ export default class JsonHistory {
   }
 
   delete(histories) {
-    if (isArray(histories)) {
-      histories.forEach(history => (history.value = undefined))
-    }
-
+    histories = toArray(histories)
+    histories.forEach(history => (history.value = undefined))
     return this.record(histories)
   }
 
   record(histories, newValue) {
     const group = []
+    histories = toArray(histories)
 
-    if (isArray(histories)) {
+    if (!isUndefined(newValue)) {
+      histories.forEach(history => (history.value = newValue))
+    }
 
-      if (!isUndefined(newValue)) {
-        histories.forEach(history => (history.value = newValue))
-      }
-
-      histories.forEach(history => {
-        const delta = createDelta(this.jsonDiffPatch, this.tree, history)
-
-        if (delta) {
-          this.cleanOldUndo()
-          if (this.deltas.length > this.steps) {
-            group.pop()
-          }
-          group.unshift(delta)
-          this.jsonDiffPatch.patch(this.tree, delta)
-          this.callback.onEachPatch(delta)
-        }
-      })
-
-    } else {
-      const delta = this.jsonDiffPatch.diff(this.tree, histories)
+    histories.forEach(history => {
+      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
 
       if (delta) {
-        this.tree = histories
-        group.push(delta)
+        this.cleanOldUndo()
+        if (this.deltas.length > this.steps) {
+          group.pop()
+        }
+        group.unshift(delta)
+        this.jsonDiffPatch.patch(this.tree, delta)
+        this.callback.onEachPatch(delta)
       }
+    })
+
+    if (group.length) {
+      this.deltas.unshift(group)
+      this.callback.onRecord(this)
+    }
+
+    return this.tree
+  }
+
+  snapShot(histories) {
+    const group = []
+    const delta = this.jsonDiffPatch.diff(this.tree, histories)
+
+    if (delta) {
+      this.tree = histories
+      group.push(delta)
     }
 
     if (group.length) {
