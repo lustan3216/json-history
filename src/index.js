@@ -17,7 +17,9 @@ export default class JsonHistory {
       onRecord() {},
       onEachPatch() {},
       onUndo() {},
+      onUndid() {},
       onRedo() {},
+      onRedid() {},
       ...callback
     }
   }
@@ -104,6 +106,7 @@ export default class JsonHistory {
 
   redo() {
     if (this.currentIndex < 1) return
+    this.callback.onRedo()
     this.currentIndex--
     const deltaGroup = this.currentDeltaGroup.reverse()
 
@@ -112,13 +115,14 @@ export default class JsonHistory {
       this.callback.onEachPatch(delta)
     })
 
-    this.callback.onRedo(deltaGroup)
+    this.callback.onRedid(deltaGroup)
     return this.tree
   }
 
   undo() {
     const maxIndex = this.deltas.length - 1
     if (this.currentIndex > maxIndex) return
+    this.callback.onUndo()
     const deltaGroup = this.currentDeltaGroup
 
     deltaGroup.forEach(delta => {
@@ -127,7 +131,7 @@ export default class JsonHistory {
     })
 
     this.currentIndex++
-    this.callback.onUndo(deltaGroup)
+    this.callback.onUndid(deltaGroup)
     return this.tree
   }
 }
