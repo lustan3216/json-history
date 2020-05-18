@@ -106,9 +106,10 @@ export default class JsonHistory {
 
   redo() {
     if (this.currentIndex < 1) return
-    this.callback.onRedo()
+
     this.currentIndex--
     const deltaGroup = this.currentDeltaGroup.reverse()
+    this.callback.onRedo(deltaGroup)
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.patch(this.tree, delta)
@@ -122,8 +123,9 @@ export default class JsonHistory {
   undo() {
     const maxIndex = this.deltas.length - 1
     if (this.currentIndex > maxIndex) return
-    this.callback.onUndo()
+
     const deltaGroup = this.currentDeltaGroup
+    this.callback.onUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.unpatch(this.tree, delta)
