@@ -14,7 +14,7 @@ export default class JsonHistory {
     this.steps = steps
     this.jsonDiffPatch = jsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
     this.callback = {
-      onRecord() {},
+      onRecorded() {},
       onEachPatch() {},
       onUndo() {},
       onUndid() {},
@@ -26,6 +26,14 @@ export default class JsonHistory {
 
   get currentDeltaGroup() {
     return this.deltas[this.currentIndex]
+  }
+
+  get nextUndoDeltaGroup() {
+    return this.deltas[this.currentIndex + 1]
+  }
+
+  get nextRedoDeltaGroup() {
+    return this.deltas[this.currentIndex - 1]
   }
 
   recordsMerge(fn) {
@@ -74,7 +82,7 @@ export default class JsonHistory {
 
     if (group.length) {
       this.deltas.unshift(group)
-      this.callback.onRecord(this)
+      this.callback.onRecorded(this)
     }
 
     return this.tree
