@@ -1,6 +1,6 @@
 # json-history
 A plugin can `redo`, `undo` deep nested JSON.
-Available to **Vue** or **React** either.
+**Vue** or **React** friendly.
 
 #### Including [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
 
