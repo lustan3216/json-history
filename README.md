@@ -4,9 +4,9 @@
 * Support `Date` but `regex` and `function`
 * min+gzipped ~ 12.2kB
 * uses [google-diff-match-patch](https://github.com/google/diff-match-patch) for long text diffs (diff at character level)
-The source code still messy but works fine. I will refactor once have time.
+* Import [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
 
-#### Import [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
+The source code still messy but works fine. I will refactor once have time.
 
 ## Installing
 ```javascript
