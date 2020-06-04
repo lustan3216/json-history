@@ -1,8 +1,8 @@
 # json-history
 * A plugin can `redo`, `undo` deep nested JSON.
 * **Vue** or **React** friendly.
-* Support `Date` but `regex` and `function`
-* min+gzipped ~ 12.2kB
+* Support `Date` as value but `regex` and `function`
+* min+gzipped 12.2kB
 * uses [google-diff-match-patch](https://github.com/google/diff-match-patch) for long text diffs (diff at character level)
 * Import [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
 
@@ -18,7 +18,7 @@ const history = new JsonHistory({
 })
 ```
 
-### Options
+## Options
 ```javascript
 new JsonHistory({
   tree = {}, 
@@ -40,7 +40,7 @@ new JsonHistory({
   }
 })
 ```
-### Record / Redo / Undo
+## Record / Redo / Undo
 Update any value of object or array by multi records. Can `redo` or `undo` after `record`.
 
 Accept array or an object.
@@ -106,8 +106,8 @@ history.undo()
 expect(history.tree).toEqual(tree)
 ```
 
-### Delete
-Delate object key.
+## Delete
+Delete object key.
 
 Same as `record` with `undefined` value.
 ```javascript
@@ -131,7 +131,7 @@ expect(history.tree).toEqual({
 })
 ```
 
-### Snapshot
+## Snapshot
 Replace the whole tree and record a step.
 
 ```javascript
@@ -148,7 +148,7 @@ history.undo()
 expect(history.tree).toEqual([1, 2, 3])
 ```
 
-### Merge records
+## Merge records
 Can merge multi actions, such as `delete` or `record`.
 
 ```javascript
@@ -197,5 +197,5 @@ expect(history.tree).toEqual({
 })
 ```
 
-### More cases
+## More cases
 https://github.com/lustan3216/json-history/tree/master/tests
