@@ -2,7 +2,7 @@
 A plugin can `redo`, `undo` deep nested JSON.
 **Vue** or **React** friendly.
 
-The source code still messy but works fine. Will refactor when I have time.
+The source code still messy but works fine. I will refactor once have time.
 
 #### Including [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
 
