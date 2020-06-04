@@ -1,10 +1,22 @@
 # json-history
-A plugin can `redo`, `undo` deep nested JSON.
-**Vue** or **React** friendly.
-
+* A plugin can `redo`, `undo` deep nested JSON.
+* **Vue** or **React** friendly.
+* Support `Date` but `regex` and `function`
+* min+gzipped ~ 12.2kB
+* uses [google-diff-match-patch]https://github.com/google/diff-match-patch for long text diffs (diff at character level)
 The source code still messy but works fine. I will refactor once have time.
 
-#### Including [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
+#### Import [jsondiffpatch](https://github.com/benjamine/jsondiffpatch) but without the formatter.
+
+## Installing
+```javascript
+  yarn json-history
+```
+```javascript
+const history = new JsonHistory({
+  tree: object | array
+})
+```
 
 ### Options
 ```javascript
@@ -19,8 +31,7 @@ new JsonHistory({
     onUndid() {},
     onRedo() {},
     onRedid() {},
-  }, 
-  jsonDiffPatchOptions = {}, // check jsondiffpatch plugin  
+  },  
   setter(tree, key, value) {
     Vue.set(tree, key, value)
   },
