@@ -4,7 +4,7 @@ import { createDelta } from './createDelta'
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter, textsFilter} = {}) {
+  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
@@ -12,7 +12,7 @@ export default class JsonHistory {
     this.currentIndex = 0
     this.tree = tree
     this.steps = steps
-    this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter, textsFilter })
+    this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
     this.callback = {
       onRecorded() {},
       onEachPatch() {},
