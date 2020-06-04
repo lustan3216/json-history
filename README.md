@@ -45,14 +45,12 @@ Update any value of object or array by multi records. Can `redo` or `undo` after
 
 Accept array or an object.
 ```javascript
-const tree = {
-  1: [1, 3],
-  a: [{}, { 1: 3 }],
-  b: { c: 5, d: { e: 6 }}
-}
-
 const history = new JsonHistory({
-  tree: JSON.parse(JSON.stringify(tree))
+  tree: {
+    1: [1, 3],
+    a: [{}, { 1: 3 }],
+    b: { c: 5, d: { e: 6 }}
+  }
 })
 
 history.record({ 
@@ -111,14 +109,12 @@ Delete object key.
 
 Same as `record` with `undefined` value.
 ```javascript
-const tree = {
-  1: [1, 3],
-  a: [{}, { 1: 3 }],
-  b: { c: 5, d: { e: 6 }}
-}
-
 const history = new JsonHistory({
-  tree: JSON.parse(JSON.stringify(tree))
+  tree: {
+    1: [1, 3],
+    a: [{}, { 1: 3 }],
+    b: { c: 5, d: { e: 6 }}
+  }
 })
 
 history.delete([{
@@ -136,7 +132,7 @@ Replace the whole tree and record a step.
 
 ```javascript
 const history = new JsonHistory({
-  tree: JSON.parse(JSON.stringify(tree))
+  tree: [1, 2, 3]
 })
 
 history.snapShot([1, { a: 4 }])
@@ -152,14 +148,12 @@ expect(history.tree).toEqual([1, 2, 3])
 Can merge multi actions, such as `delete` or `record`.
 
 ```javascript
-const tree = {
-  1: [1, 3],
-  a: [{}, { 1: 3 }],
-  b: { c: 5, d: { e: 6 }}
-}
-
-const history = new JsonHistory({
-  tree: JSON.parse(JSON.stringify(tree))
+ const history = new JsonHistory({
+  tree: {
+    1: [1, 3],
+    a: [{}, { 1: 3 }],
+    b: { c: 5, d: { e: 6 }}
+  }
 })
 
 history.recordsMerge(() => {
