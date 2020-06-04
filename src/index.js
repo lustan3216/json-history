@@ -4,7 +4,7 @@ import { createDelta } from './createDelta'
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter} = {}) {
+  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter, textsFilter} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
@@ -12,7 +12,7 @@ export default class JsonHistory {
     this.currentIndex = 0
     this.tree = tree
     this.steps = steps
-    this.jsonDiffPatch = jsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
+    this.jsonDiffPatch = jsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter, textsFilter })
     this.callback = {
       onRecorded() {},
       onEachPatch() {},
@@ -24,12 +24,8 @@ export default class JsonHistory {
     }
   }
 
-  get currentDeltaGroup() {
-    return this.deltas[this.currentIndex]
-  }
-
   get nextUndoDeltaGroup() {
-    return this.deltas[this.currentIndex + 1]
+    return this.deltas[this.currentIndex]
   }
 
   get nextRedoDeltaGroup() {
@@ -99,7 +95,7 @@ export default class JsonHistory {
 
     if (group.length) {
       this.deltas.unshift(group)
-      this.callback.onRecord(this)
+      this.callback.onRecorded(this)
     }
 
     return this.tree
@@ -112,11 +108,15 @@ export default class JsonHistory {
     }
   }
 
-  redo() {
-    if (this.currentIndex < 1) return
+  get canNotRedo() {
+    return this.currentIndex < 1
+  }
 
+  redo() {
+    if (this.canNotRedo) return
+
+    const deltaGroup = this.nextRedoDeltaGroup.reverse()
     this.currentIndex--
-    const deltaGroup = this.currentDeltaGroup.reverse()
     this.callback.onRedo(deltaGroup)
 
     deltaGroup.forEach(delta => {
@@ -128,11 +128,16 @@ export default class JsonHistory {
     return this.tree
   }
 
-  undo() {
+  get canNotUndo() {
     const maxIndex = this.deltas.length - 1
-    if (this.currentIndex > maxIndex) return
+    return this.currentIndex > maxIndex
+  }
 
-    const deltaGroup = this.currentDeltaGroup
+  undo() {
+    if (this.canNotUndo) return
+
+    const deltaGroup = this.nextUndoDeltaGroup
+    this.currentIndex++
     this.callback.onUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
@@ -140,7 +145,6 @@ export default class JsonHistory {
       this.callback.onEachPatch(delta)
     })
 
-    this.currentIndex++
     this.callback.onUndid(deltaGroup)
     return this.tree
   }
