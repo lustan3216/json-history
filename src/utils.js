@@ -1,5 +1,5 @@
 import isPlainObject from 'is-plain-object'
-import jsonDiffPatch from './jsonDiffPatch.js'
+import JsonDiffPatch from './jsonDiffPatch.js'
 
 export { isPlainObject }
 
@@ -25,7 +25,7 @@ export function toArray(e) {
 
 export function cloneJson(e) {
   if (isPlainObject(e) || isArray(e)) {
-    return JSON.parse(JSON.stringify(e), jsonDiffPatch.dateReviver)
+    return JSON.parse(JSON.stringify(e), JsonDiffPatch.dateReviver)
   } else {
     return e
   }

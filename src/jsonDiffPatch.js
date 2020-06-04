@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import dmp from 'diff-match-patch';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -671,10 +672,10 @@ var collectChildrenPatchFilter = function collectChildrenPatchFilter(context) {
   for (var index = 0; index < length; index++) {
     child = context.children[index];
     if (Object.prototype.hasOwnProperty.call(context.left, child.childName) && child.result === undefined) {
-      this.context.delete(child.childName);
+      context.delete(child.childName);
       // delete context.left[child.childName];
     } else if (context.left[child.childName] !== child.result) {
-      this.context.set(child.childName, child.result);
+      context.set(child.childName, child.result);
       // context.left[child.childName] = child.result;
     }
   }
@@ -1124,7 +1125,7 @@ var collectChildrenPatchFilter$1 = function collectChildrenPatchFilter(context) 
   var child = void 0;
   for (var index = 0; index < length; index++) {
     child = context.children[index];
-    this.context.set(child.childName, child.result);
+    context.set(child.childName, child.result);
     // context.left[child.childName] = child.result;
   }
   context.setResult(context.left).exit();
@@ -1235,64 +1236,6 @@ var diffFilter$2 = function datesDiffFilter(context) {
   }
 };
 diffFilter$2.filterName = 'dates';
-
-var DiffPatcher = function () {
-  function DiffPatcher(options) {
-    var _ref, _ref2, _ref3;
-
-    classCallCheck(this, DiffPatcher);
-
-    this.processor = new Processor(options);
-    var texts = options.textsFilter;
-    var diff = [collectChildrenDiffFilter, diffFilter, diffFilter$2, objectsDiffFilter, diffFilter$1];
-    var patch = [collectChildrenPatchFilter, collectChildrenPatchFilter$1, patchFilter, patchFilter$1, patchFilter$2];
-    var reverse = [collectChildrenReverseFilter, collectChildrenReverseFilter$1, reverseFilter, reverseFilter$1, reverseFilter$2];
-
-    if (texts) {
-      diff.splice(3, 0, texts.diffFilter);
-      patch.splice(3, 0, texts.patchFilter);
-      reverse.splice(3, 0, texts.reverseFilter);
-    }
-    this.processor.pipe((_ref = new Pipe('diff')).append.apply(_ref, diff).shouldHaveResult());
-    this.processor.pipe((_ref2 = new Pipe('patch')).append.apply(_ref2, patch).shouldHaveResult());
-    this.processor.pipe((_ref3 = new Pipe('reverse')).append.apply(_ref3, reverse).shouldHaveResult());
-  }
-
-  createClass(DiffPatcher, [{
-    key: 'options',
-    value: function options() {
-      var _processor;
-
-      return (_processor = this.processor).options.apply(_processor, arguments);
-    }
-  }, {
-    key: 'diff',
-    value: function diff(left, right) {
-      return this.processor.process(new DiffContext(left, right));
-    }
-  }, {
-    key: 'patch',
-    value: function patch(left, delta) {
-      return this.processor.process(new PatchContext(left, delta));
-    }
-  }, {
-    key: 'reverse',
-    value: function reverse(delta) {
-      return this.processor.process(new ReverseContext(delta));
-    }
-  }, {
-    key: 'unpatch',
-    value: function unpatch(right, delta) {
-      return this.patch(right, this.reverse(delta));
-    }
-  }, {
-    key: 'clone',
-    value: function clone$$1(value) {
-      return clone(value);
-    }
-  }]);
-  return DiffPatcher;
-}();
 
 /* global diff_match_patch */
 var TEXT_DIFF = 2;
@@ -1427,11 +1370,51 @@ var reverseFilter$3 = function textsReverseFilter(context) {
 };
 reverseFilter$3.filterName = 'texts';
 
-var texts = Object.freeze({
-  diffFilter: diffFilter$3,
-  patchFilter: patchFilter$3,
-  reverseFilter: reverseFilter$3
-});
+var DiffPatcher = function () {
+  function DiffPatcher(options) {
+    classCallCheck(this, DiffPatcher);
+
+    this.processor = new Processor(options);
+    this.processor.pipe(new Pipe('diff').append(collectChildrenDiffFilter, diffFilter, diffFilter$2, diffFilter$3, objectsDiffFilter, diffFilter$1).shouldHaveResult());
+    this.processor.pipe(new Pipe('patch').append(collectChildrenPatchFilter, collectChildrenPatchFilter$1, patchFilter, patchFilter$3, patchFilter$1, patchFilter$2).shouldHaveResult());
+    this.processor.pipe(new Pipe('reverse').append(collectChildrenReverseFilter, collectChildrenReverseFilter$1, reverseFilter, reverseFilter$3, reverseFilter$1, reverseFilter$2).shouldHaveResult());
+  }
+
+  createClass(DiffPatcher, [{
+    key: 'options',
+    value: function options() {
+      var _processor;
+
+      return (_processor = this.processor).options.apply(_processor, arguments);
+    }
+  }, {
+    key: 'diff',
+    value: function diff(left, right) {
+      return this.processor.process(new DiffContext(left, right));
+    }
+  }, {
+    key: 'patch',
+    value: function patch(left, delta) {
+      return this.processor.process(new PatchContext(left, delta));
+    }
+  }, {
+    key: 'reverse',
+    value: function reverse(delta) {
+      return this.processor.process(new ReverseContext(delta));
+    }
+  }, {
+    key: 'unpatch',
+    value: function unpatch(right, delta) {
+      return this.patch(right, this.reverse(delta));
+    }
+  }, {
+    key: 'clone',
+    value: function clone$$1(value) {
+      return clone(value);
+    }
+  }]);
+  return DiffPatcher;
+}();
 
 // use as 2nd parameter for JSON.parse to revive Date instances
 function dateReviver(key, value) {
@@ -1480,5 +1463,4 @@ function reverse() {
   return defaultInstance.reverse.apply(defaultInstance, arguments);
 }
 
-export { texts as textsFilter, DiffPatcher, create, dateReviver, diff, patch, unpatch, reverse };
-//# sourceMappingURL=jsondiffpatch.esm.js.map
+export default { DiffPatcher, create, dateReviver, diff, patch, unpatch, reverse };

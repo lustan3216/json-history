@@ -1,4 +1,4 @@
-import jsonDiffPatch from './jsonDiffPatch'
+import JsonDiffPatch from './jsonDiffPatch'
 import { isUndefined, toArray } from './utils'
 import { createDelta } from './createDelta'
 
@@ -12,7 +12,7 @@ export default class JsonHistory {
     this.currentIndex = 0
     this.tree = tree
     this.steps = steps
-    this.jsonDiffPatch = jsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter, textsFilter })
+    this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter, textsFilter })
     this.callback = {
       onRecorded() {},
       onEachPatch() {},
