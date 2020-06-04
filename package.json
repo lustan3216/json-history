@@ -3,8 +3,7 @@
   "license": "MIT",
   "version": "0.1.6",
   "scripts": {
-    "test": "jest",
-    "pub": "npm publish && yarn pu"
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.7.7",
