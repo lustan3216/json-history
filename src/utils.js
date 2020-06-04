@@ -1,5 +1,5 @@
 import isPlainObject from 'is-plain-object'
-import JsonDiffPatch from './jsonDiffPatch.js'
+import JsonDiffPatch from '../vendor/jsonDiffPatch.js'
 
 export { isPlainObject }
 

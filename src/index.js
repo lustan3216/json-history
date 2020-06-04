@@ -1,4 +1,4 @@
-import JsonDiffPatch from './jsonDiffPatch'
+import JsonDiffPatch from '../vendor/jsonDiffPatch'
 import { isUndefined, toArray } from './utils'
 import { createDelta } from './createDelta'
 
