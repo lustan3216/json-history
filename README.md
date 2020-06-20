@@ -10,7 +10,7 @@ The source code still messy but works fine. I will refactor once have time.
 
 ## Installing
 ```javascript
-  yarn json-history
+  yarn add json-history
 ```
 ```javascript
 const history = new JsonHistory({
