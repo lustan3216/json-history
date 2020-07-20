@@ -4,7 +4,8 @@ import { cloneJson } from '../src/utils'
 const tree = {
   1: [1, 3],
   a: [{}, {1: 3}],
-  b: {c: 5, d: {e: 6}}
+  b: {c: 5, d: {e: 6}
+  }
 }
 
 describe('test history', () => {

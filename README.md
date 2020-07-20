@@ -191,5 +191,63 @@ expect(history.tree).toEqual({
 })
 ```
 
+## Clean records
+Can pass a function to check the delta should delete or not.
+
+```javascript
+const shouldDeleteFunction = function (defalt) {
+  const key = Object.keys(delta)[0]
+  return key === 'this one should delete'
+}
+cleanDeltas(shouldDeleteFunction)
+```
+
+```javascript
+const history = new JsonHistory({
+  tree: {
+    1: [1, 3],
+    a: [{}, { 1: 3 }],
+    b: { c: 5, d: { e: 6 }}
+  }
+})
+
+history.record([
+  {
+    path: 'b',
+    value: undefined
+  }
+])
+
+history.record([
+  {
+path: 1,
+value: []
+  }
+])
+
+history.record([
+  {
+path: 'a.length.length',
+value: {}
+  }
+])
+
+history.undo()
+
+history.cleanDeltas(delta => {
+  const key = Object.keys(delta)[0]
+  return key === '1'
+})
+
+history.undo()
+history.undo()
+
+expect(history.tree).toEqual({
+  1: [],
+  a: [{}, {1: 3}],
+  b: {c: 5, d: {e: 6}}
+})
+```
+
 ## More cases
 https://github.com/lustan3216/json-history/tree/master/tests

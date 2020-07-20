@@ -1,6 +1,7 @@
 import JsonDiffPatch from '../vendor/jsonDiffPatch'
 import { isUndefined, toArray } from './utils'
 import { createDelta } from './createDelta'
+import { pathStringSplit, toNormalizedPath } from './path'
 
 export default class JsonHistory {
 
@@ -15,7 +16,6 @@ export default class JsonHistory {
     this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
     this.callback = {
       onRecorded() {},
-      onEachPatch() {},
       onUndo() {},
       onUndid() {},
       onRedo() {},
@@ -72,7 +72,6 @@ export default class JsonHistory {
         }
         group.unshift(delta)
         this.jsonDiffPatch.patch(this.tree, delta)
-        this.callback.onEachPatch(delta)
       }
     })
 
@@ -121,7 +120,6 @@ export default class JsonHistory {
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.patch(this.tree, delta)
-      this.callback.onEachPatch(delta)
     })
 
     this.callback.onRedid(deltaGroup)
@@ -138,14 +136,39 @@ export default class JsonHistory {
 
     const deltaGroup = this.nextUndoDeltaGroup
     this.currentIndex++
+
     this.callback.onUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.unpatch(this.tree, delta)
-      this.callback.onEachPatch(delta)
     })
 
     this.callback.onUndid(deltaGroup)
     return this.tree
+  }
+
+  cleanDeltas(shouldDeleteFunction) {
+    this.deltas.forEach((group, i) => {
+
+      group.forEach((delta, ii) => {
+        const shouldDelete = shouldDeleteFunction(delta)
+        if (shouldDelete) {
+          group[ii] = null
+        }
+      })
+
+      this.deltas[i] = group.filter(delta => delta)
+    })
+
+
+    let availableIndex = 0
+    for (let i = 0; i === this.currentIndex; i++) {
+      if (this.deltas[i].length) {
+        availableIndex++
+      }
+    }
+
+    this.deltas = this.deltas.filter(group => group.length)
+    this.currentIndex = availableIndex
   }
 }
