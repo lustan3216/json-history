@@ -163,7 +163,7 @@ export default class JsonHistory {
 
     let availableIndex = 0
     for (let i = 0; i === this.currentIndex; i++) {
-      if (this.deltas[i].length) {
+      if (this.deltas[i] && this.deltas[i].length) {
         availableIndex++
       }
     }
