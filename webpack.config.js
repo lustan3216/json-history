@@ -11,7 +11,8 @@ module.exports = {
     new CleanWebpackPlugin()
   ],
   output: {
-    filename: 'json-history.min.js',
+    filename: 'json-history.umd.js',
+    // libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
   },
 };
