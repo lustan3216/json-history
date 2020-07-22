@@ -12,7 +12,8 @@ module.exports = {
   ],
   output: {
     filename: 'json-history.umd.js',
-    // libraryTarget: 'umd',
+    libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
+    globalObject: 'global'
   },
 };
