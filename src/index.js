@@ -1,7 +1,6 @@
 import JsonDiffPatch from '../vendor/jsonDiffPatch'
 import { isUndefined, toArray } from './utils'
 import { createDelta } from './createDelta'
-import { pathStringSplit, toNormalizedPath } from './path'
 
 export default class JsonHistory {
 
@@ -16,6 +15,8 @@ export default class JsonHistory {
     this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
     this.callback = {
       onRecorded() {},
+      onDeltasChanged() {},
+      onDeltasCleaned() {},
       onUndo() {},
       onUndid() {},
       onRedo() {},
@@ -34,6 +35,8 @@ export default class JsonHistory {
 
   recordsMerge(fn) {
     const oldLength = this.deltas.length
+    const temp = this.callback.onDeltasChanged
+    this.callback.onDeltasChanged = function(){}
     fn()
     const newLength = this.deltas.length
     const diff = newLength - oldLength
@@ -46,6 +49,8 @@ export default class JsonHistory {
       }
       this.deltas = [newGroup, ...this.deltas.slice(diff)]
     }
+    this.callback.onDeltasChanged = temp
+    this.callback.onDeltasChanged(this)
   }
 
   delete(histories) {
@@ -78,6 +83,7 @@ export default class JsonHistory {
     if (group.length) {
       this.deltas.unshift(group)
       this.callback.onRecorded(this)
+      this.callback.onDeltasChanged(this)
     }
 
     return this.tree
@@ -170,5 +176,6 @@ export default class JsonHistory {
 
     this.deltas = this.deltas.filter(group => group.length)
     this.currentIndex = availableIndex
+    this.callback.onDeltasCleaned(this)
   }
 }
