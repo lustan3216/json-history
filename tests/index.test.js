@@ -522,29 +522,6 @@ describe('test history', () => {
 
       expect(history.tree).toEqual(history1.tree)
     })
-
-    test('all same value', () => {
-      history.record(
-        [
-          {
-            path: '1[1]'
-          },
-          {
-            path: 'a[1]'
-          },
-          {
-            path: 'b[1]'
-          }
-        ],
-        [100]
-      )
-
-      expect(history.tree).toEqual({
-        1: [1, [100]],
-        a: [{}, [100]],
-        b: [null, [100]]
-      })
-    })
   })
 
   describe('array .record array inset', () => {

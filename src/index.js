@@ -1,6 +1,8 @@
 import JsonDiffPatch from '../vendor/jsonDiffPatch'
-import { isUndefined, toArray } from './utils'
+import { toArray, setValueByPath } from './utils'
 import { createDelta } from './createDelta'
+
+const debounceMap = {}
 
 export default class JsonHistory {
 
@@ -59,13 +61,59 @@ export default class JsonHistory {
     return this.record(histories)
   }
 
-  record(histories, newValue) {
-    const group = []
+  debounceRecord(histories, delay = 20) {
     histories = toArray(histories)
 
-    if (!isUndefined(newValue)) {
-      histories.forEach(history => (history.value = newValue))
+    if (!histories.length) {
+      return
     }
+
+    histories.forEach(history => {
+      const { path, value } = history
+
+      if (debounceMap[path]) {
+        const { timerId } = debounceMap[path]
+
+        if (timerId) {
+          clearTimeout(timerId)
+          debounceMap[path].timerId = null
+        }
+      }
+
+      const perform = () => {
+        const { timerId, startValue } = debounceMap[path]
+
+        const start = setValueByPath({}, path, startValue)
+        const delta = createDelta(this.jsonDiffPatch, start, { path, value })
+        if (delta) {
+          this.deltas.unshift([delta])
+          this.callback.onRecorded(this)
+          this.callback.onDeltasChanged(this)
+        }
+
+        clearTimeout(timerId)
+        delete debounceMap[path]
+      }
+
+      if (debounceMap[path]) {
+        debounceMap[path].timerId = setTimeout(perform, delay)
+      } else {
+        debounceMap[path] = {
+          startValue: value,
+          timerId: setTimeout(perform, delay)
+        }
+      }
+      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+      if (delta) {
+        this.jsonDiffPatch.patch(this.tree, delta)
+      }
+    })
+
+  }
+
+  record(histories) {
+    const group = []
+    histories = toArray(histories)
 
     histories.forEach(history => {
       const delta = createDelta(this.jsonDiffPatch, this.tree, history)
@@ -179,3 +227,4 @@ export default class JsonHistory {
     this.callback.onDeltasCleaned(this)
   }
 }
+
