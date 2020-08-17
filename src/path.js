@@ -8,9 +8,9 @@ export function pathStringSplit(path) {
     .split(/\.|(?<=\])(?=.)|(?=\[)/)
 }
 
-export function isArrayKeyToBooleanArray(path) {
+export function isArrayKeyPathArray(pathArray) {
   // [false, false, true, false, true]
-  return path.map(key => Boolean(key.match(/\[(\d+)\]/)))
+  return pathArray.map(key => Boolean(key.match(/\[(\d+)\]/)))
 }
 
 export function toNormalizedPath(path) {

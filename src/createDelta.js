@@ -1,6 +1,6 @@
 import {
   createRestOfValue,
-  isArrayKeyToBooleanArray,
+  isArrayKeyPathArray,
   pathStringSplit,
   toNormalizedPath
 } from "./path"
@@ -10,7 +10,7 @@ import { stop, aBugHere, done, DONE, STOP } from './error'
 export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray = false }) {
   const newValue = cloneJson(value)
   const arrayPath = pathStringSplit(path)
-  const isArrayKeyArray = isArrayKeyToBooleanArray(arrayPath)
+  const isArrayKeyArray = isArrayKeyPathArray(arrayPath)
   const normalizedPathArray = toNormalizedPath(arrayPath)
 
   let currentTree = tree

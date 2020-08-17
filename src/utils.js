@@ -1,8 +1,7 @@
 import isPlainObject from 'is-plain-object'
-import setValueByPath from 'lodash.set'
 import JsonDiffPatch from '../vendor/jsonDiffPatch.js'
 
-export { isPlainObject, setValueByPath }
+export { isPlainObject, setValueByPath, getValueByPath }
 
 export const isArray = Array.isArray
 
@@ -13,11 +12,6 @@ export const isString = function(e) {
 export const isUndefined = function isUndefined(e) {
   return e === void(0)
 }
-
-export function arrayAllSame(e) {
-  return [...new Set(e)].length === 1
-}
-
 
 export function toArray(e) {
   if (isArray(e)) {

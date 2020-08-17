@@ -95,7 +95,7 @@ describe('test debounceRecord', () => {
       b: {c: 5, d: {e: 6}, length: { length: [] }}
     })
 
-    expect(history.deltas.length).toEqual(2)
+    expect(history.deltas.length).toEqual(3)
   })
 
   test('different path2', async () => {
@@ -142,6 +142,65 @@ describe('test debounceRecord', () => {
       b: {c: 5, d: {e: 6}, length: { length: [] }}
     })
 
+    expect(history.deltas.length).toEqual(3)
+  })
+
+  test('real case', async () => {
+    const tree = { a: {} }
+    history = new JsonHistory({
+      tree: cloneJson(tree)
+    })
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: '1px'
+      }
+    ])
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: '2px'
+      }
+    ])
+
+    await sleep(50);
+
+    expect(history.tree).toEqual({
+      a: { style: { border: '2px' } }
+    })
+
+    expect(history.deltas.length).toEqual(1)
+
+    history.undo()
+
+    expect(history.tree).toEqual(tree)
+
+    history.redo()
+
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: '1px'
+      }
+    ])
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: undefined
+      }
+    ])
+
+    expect(history.tree).toEqual({
+      "a": {
+        "style": {}
+      }
+    })
+
+    await sleep(50);
     expect(history.deltas.length).toEqual(2)
   })
 })

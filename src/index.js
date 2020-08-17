@@ -1,5 +1,5 @@
 import JsonDiffPatch from '../vendor/jsonDiffPatch'
-import { toArray, setValueByPath } from './utils'
+import { toArray, cloneJson } from './utils'
 import { createDelta } from './createDelta'
 
 const debounceMap = {}
@@ -80,11 +80,10 @@ export default class JsonHistory {
         }
       }
 
-      const perform = () => {
-        const { timerId, startValue } = debounceMap[path]
+      const perform = (path, value) => {
+        const { timerId, snapshotTree } = debounceMap[path]
 
-        const start = setValueByPath({}, path, startValue)
-        const delta = createDelta(this.jsonDiffPatch, start, { path, value })
+        const delta = createDelta(this.jsonDiffPatch, snapshotTree, { path, value })
         if (delta) {
           this.deltas.unshift([delta])
           this.callback.onRecorded(this)
@@ -95,16 +94,18 @@ export default class JsonHistory {
         delete debounceMap[path]
       }
 
-      if (debounceMap[path]) {
-        debounceMap[path].timerId = setTimeout(perform, delay)
-      } else {
-        debounceMap[path] = {
-          startValue: value,
-          timerId: setTimeout(perform, delay)
-        }
-      }
       const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+
       if (delta) {
+        if (debounceMap[path]) {
+          debounceMap[path].timerId = setTimeout(perform.bind(this, path, value), delay)
+        } else {
+          debounceMap[path] = {
+            snapshotTree: cloneJson(this.tree),
+            timerId: setTimeout(perform.bind(this, path, value), delay)
+          }
+        }
+
         this.jsonDiffPatch.patch(this.tree, delta)
       }
     })
