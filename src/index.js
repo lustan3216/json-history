@@ -94,18 +94,17 @@ export default class JsonHistory {
         delete debounceMap[path]
       }
 
-      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
-
-      if (delta) {
-        if (debounceMap[path]) {
-          debounceMap[path].timerId = setTimeout(perform.bind(this, path, value), delay)
-        } else {
-          debounceMap[path] = {
-            snapshotTree: cloneJson(this.tree),
-            timerId: setTimeout(perform.bind(this, path, value), delay)
-          }
+      if (debounceMap[path]) {
+        debounceMap[path].timerId = setTimeout(perform.bind(this, path, value), delay)
+      } else {
+        debounceMap[path] = {
+          snapshotTree: cloneJson(this.tree),
+          timerId: setTimeout(perform.bind(this, path, value), delay)
         }
+      }
 
+      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+      if (delta) {
         this.jsonDiffPatch.patch(this.tree, delta)
       }
     })
@@ -145,18 +144,17 @@ export default class JsonHistory {
         delete debounceMap[key]
       }
 
-      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
-
-      if (delta) {
-        if (debounceMap[key]) {
-          debounceMap[key].timerId = setTimeout(perform, delay)
-        } else {
-          debounceMap[key] = {
-            snapshotTree: cloneJson(this.tree),
-            timerId: setTimeout(perform, delay)
-          }
+      if (debounceMap[key]) {
+        debounceMap[key].timerId = setTimeout(perform, delay)
+      } else {
+        debounceMap[key] = {
+          snapshotTree: cloneJson(this.tree),
+          timerId: setTimeout(perform, delay)
         }
+      }
 
+      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+      if (delta) {
         this.jsonDiffPatch.patch(this.tree, delta)
       }
     })
