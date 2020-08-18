@@ -6,7 +6,7 @@ const debounceMap = {}
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, jsonDiffPatchOptions = {}, setter, deleter} = {}) {
+  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, setter, deleter} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
@@ -14,7 +14,7 @@ export default class JsonHistory {
     this.currentIndex = 0
     this.tree = tree
     this.steps = steps
-    this.jsonDiffPatch = JsonDiffPatch.create({ ...jsonDiffPatchOptions, setter, deleter })
+    this.jsonDiffPatch = JsonDiffPatch.create({ setter, deleter })
     this.callback = {
       onRecorded() {},
       onDeltasChanged() {},
@@ -133,7 +133,7 @@ export default class JsonHistory {
       const perform = () => {
         const { timerId, snapshotTree } = debounceMap[key]
 
-        const delta = this.jsonDiffPatch.diff(snapshotTree, this.tree)
+        const delta = this.jsonDiffPatch.diff(snapshotTree, cloneJson(this.tree))
         if (delta) {
           this.deltas.unshift([delta])
           this.callback.onRecorded(this)
