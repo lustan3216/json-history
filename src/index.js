@@ -61,7 +61,7 @@ export default class JsonHistory {
     return this.record(histories)
   }
 
-  debounceRecord(histories, delay = 100) {
+  debounceRecord(histories, delay = 100, treeFilter) {
     const key = 'debounceRecordKey'
     histories = toArray(histories)
 
@@ -83,7 +83,7 @@ export default class JsonHistory {
       const perform = () => {
         const { timerId, snapshotTree } = debounceMap[key]
 
-        const delta = this.jsonDiffPatch.diff(snapshotTree, cloneJson(this.tree))
+        const delta = this.jsonDiffPatch.diff(snapshotTree, treeFilter ? treeFilter(this.tree) : cloneJson(this.tree))
         if (delta) {
           this.deltas.unshift([delta])
           this.callback.onRecorded(this)
@@ -98,7 +98,7 @@ export default class JsonHistory {
         debounceMap[key].timerId = setTimeout(perform, delay)
       } else {
         debounceMap[key] = {
-          snapshotTree: cloneJson(this.tree),
+          snapshotTree: treeFilter ? treeFilter(this.tree) : cloneJson(this.tree),
           timerId: setTimeout(perform, delay)
         }
       }
