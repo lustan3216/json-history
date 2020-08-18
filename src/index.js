@@ -61,7 +61,7 @@ export default class JsonHistory {
     return this.record(histories)
   }
 
-  debounceRecord(histories, delay = 20) {
+  debounceRecordSplitByPath(histories, delay = 100) {
     histories = toArray(histories)
 
     if (!histories.length) {
@@ -103,6 +103,57 @@ export default class JsonHistory {
           debounceMap[path] = {
             snapshotTree: cloneJson(this.tree),
             timerId: setTimeout(perform.bind(this, path, value), delay)
+          }
+        }
+
+        this.jsonDiffPatch.patch(this.tree, delta)
+      }
+    })
+
+  }
+
+  debounceRecord(histories, delay = 100) {
+    const key = 'debounceRecordKey'
+    histories = toArray(histories)
+
+    if (!histories.length) {
+      return
+    }
+
+    histories.forEach(history => {
+
+      if (debounceMap[key]) {
+        const { timerId } = debounceMap[key]
+
+        if (timerId) {
+          clearTimeout(timerId)
+          debounceMap[key].timerId = null
+        }
+      }
+
+      const perform = () => {
+        const { timerId, snapshotTree } = debounceMap[key]
+
+        const delta = this.jsonDiffPatch.diff(snapshotTree, this.tree)
+        if (delta) {
+          this.deltas.unshift([delta])
+          this.callback.onRecorded(this)
+          this.callback.onDeltasChanged(this)
+        }
+
+        clearTimeout(timerId)
+        delete debounceMap[key]
+      }
+
+      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+
+      if (delta) {
+        if (debounceMap[key]) {
+          debounceMap[key].timerId = setTimeout(perform, delay)
+        } else {
+          debounceMap[key] = {
+            snapshotTree: cloneJson(this.tree),
+            timerId: setTimeout(perform, delay)
           }
         }
 
