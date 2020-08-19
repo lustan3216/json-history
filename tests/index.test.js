@@ -171,9 +171,9 @@ describe('test history', () => {
       })
     })
 
-    test('a[1][1]a = { f: 5 }', () => {
+    test('a[1][1].a = { f: 5 }', () => {
       history.record([{
-        path: 'a[1][1]a',
+        path: 'a[1][1].a',
         value: {f: 5}
       }])
 

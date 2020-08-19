@@ -54,7 +54,7 @@ describe('.recordMerge', () => {
   test('complicated path', () => {
     history.record([
       {
-        path: 'a.$w[%]q.1[!33][#2][1].#3[12:3]:3.:6',
+        path: 'a.$w[%].q.1[!33][#2][1].#3[12:3].3.6',
         value: 1
       }
     ])
@@ -77,8 +77,8 @@ describe('.recordMerge', () => {
                     {
                       "#3": {
                         "[12:3]": {
-                          ":3": {
-                            ":6": 1
+                          "3": {
+                            "6": 1
                           }
                         }
                       }
