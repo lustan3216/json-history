@@ -104,7 +104,9 @@ export default class JsonHistory {
     clearTimeout(timerId)
     const currentTree = this.treeFilter ? this.treeFilter(this.tree) : cloneJson(this.tree)
     const delta = this.jsonDiffPatch.diff(snapshotTree, currentTree)
+
     if (delta) {
+      this._cleanOldUndo()
       this.deltas.unshift([delta])
       this.callback.onRecorded(this)
       this.callback.onDeltasChanged(this)
@@ -122,7 +124,7 @@ export default class JsonHistory {
       const delta = createDelta(this.jsonDiffPatch, this.tree, history)
 
       if (delta) {
-        this.cleanOldUndo()
+        this._cleanOldUndo()
         if (this.deltas.length > this.steps) {
           group.pop()
         }
@@ -158,8 +160,7 @@ export default class JsonHistory {
     return this.tree
   }
 
-  cleanOldUndo() {
-    this.debounceExecute()
+  _cleanOldUndo() {
     if (this.currentIndex > 0) {
       this.deltas = this.deltas.slice(this.currentIndex)
       this.currentIndex = 0

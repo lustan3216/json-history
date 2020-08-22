@@ -204,6 +204,35 @@ describe('test debounceRecord', () => {
     await sleep(101);
     expect(history.deltas.length).toEqual(2)
   })
+
+  test('real case2', async () => {
+    const tree = { a: {} }
+    history = new JsonHistory({
+      tree: cloneJson(tree)
+    })
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: '1px'
+      }
+    ])
+
+    history.debounceRecord([
+      {
+        path: 'a.style.border',
+        value: '2px'
+      }
+    ])
+
+    history.undo()
+    history.undo()
+    history.undo()
+
+    expect(history.deltas.length).toEqual(1)
+
+    expect(history.tree).toEqual({ a: {} })
+  })
 })
 
 function sleep(ms) {

@@ -15,7 +15,7 @@ describe('.redo undo', () => {
     })
   })
 
-  test('recordMerge', () => {
+  test('3 undo', () => {
     history.record([
       {
         path: 'b',
@@ -137,5 +137,118 @@ describe('.redo undo', () => {
       a: {c: {t: [1, 3, 5, {}]}, g: {}},
       b: {c: [1, 2, 3, {a: 3}], d: {}}
     })
+  })
+
+  test('real case', () => {
+    history = new JsonHistory({
+      tree: {}
+    })
+
+    history.record([
+      {
+        path: 'a',
+        value: 1
+      }
+    ])
+
+    history.record([
+      {
+        path: 'a',
+        value: 2
+      }
+    ])
+
+
+    history.record([
+      {
+        path: 'a',
+        value: 3
+      }
+    ])
+    history.record([
+      {
+        path: 'a',
+        value: 4
+      }
+    ])
+
+    history.undo()
+    history.undo()
+
+    expect(history.deltas.length).toEqual(4)
+
+    history.record([
+      {
+        path: 'a',
+        value: 5
+      }
+    ])
+
+    expect(history.tree).toEqual({
+      a: 5
+    })
+
+    history.undo()
+
+    expect(history.deltas.length).toEqual(3)
+  })
+
+  test('real case by debounce record', () => {
+    history = new JsonHistory({
+      tree: {}
+    })
+
+    history.debounceRecord([
+      {
+        path: 'a',
+        value: 1
+      }
+    ])
+    history.undo()
+    history.redo()
+    history.debounceRecord([
+      {
+        path: 'a',
+        value: 2
+      }
+    ])
+    history.undo()
+    history.redo()
+
+    history.debounceRecord([
+      {
+        path: 'a',
+        value: 3
+      }
+    ])
+    history.undo()
+    history.redo()
+    history.debounceRecord([
+      {
+        path: 'a',
+        value: 4
+      }
+    ])
+
+    history.undo()
+    history.undo()
+
+    expect(history.deltas.length).toEqual(4)
+
+    history.debounceRecord([
+      {
+        path: 'a',
+        value: 5
+      }
+    ])
+    history.undo()
+    history.redo()
+    expect(history.tree).toEqual({
+      a: 5
+    })
+
+    history.undo()
+
+    expect(history.deltas.length).toEqual(3)
   })
 })
