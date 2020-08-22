@@ -2,11 +2,11 @@ import JsonDiffPatch from '../vendor/jsonDiffPatch'
 import { toArray, cloneJson } from './utils'
 import { createDelta } from './createDelta'
 
-const debounceMap = {}
+let debounceData = null
 
 export default class JsonHistory {
 
-  constructor({ tree = {}, steps = 50, backUpDeltas = [], callback = {}, setter, deleter} = {}) {
+  constructor({ tree = {}, treeFilter = null, steps = 50, backUpDeltas = [], callback = {}, setter, deleter} = {}) {
     // oldGroup = [newDelta...oldDelta]
     // newGroup = [newDelta...oldDelta]
     // deltas = [newGroup...oldGroup]
@@ -14,6 +14,7 @@ export default class JsonHistory {
     this.currentIndex = 0
     this.tree = tree
     this.steps = steps
+    this.treeFilter = treeFilter
     this.jsonDiffPatch = JsonDiffPatch.create({ setter, deleter })
     this.callback = {
       onRecorded() {},
@@ -61,8 +62,7 @@ export default class JsonHistory {
     return this.record(histories)
   }
 
-  debounceRecord(histories, delay = 100, treeFilter) {
-    const key = 'debounceRecordKey'
+  debounceRecord(histories, delay = 100) {
     histories = toArray(histories)
 
     if (!histories.length) {
@@ -70,36 +70,21 @@ export default class JsonHistory {
     }
 
     histories.forEach(history => {
-
-      if (debounceMap[key]) {
-        const { timerId } = debounceMap[key]
+      if (debounceData) {
+        const { timerId } = debounceData
 
         if (timerId) {
           clearTimeout(timerId)
-          debounceMap[key].timerId = null
+          debounceData.timerId = null
         }
       }
 
-      const perform = () => {
-        const { timerId, snapshotTree } = debounceMap[key]
-
-        const delta = this.jsonDiffPatch.diff(snapshotTree, treeFilter ? treeFilter(this.tree) : cloneJson(this.tree))
-        if (delta) {
-          this.deltas.unshift([delta])
-          this.callback.onRecorded(this)
-          this.callback.onDeltasChanged(this)
-        }
-
-        clearTimeout(timerId)
-        delete debounceMap[key]
-      }
-
-      if (debounceMap[key]) {
-        debounceMap[key].timerId = setTimeout(perform, delay)
+      if (debounceData) {
+        debounceData.timerId = setTimeout(this.debounceExecute.bind(this), delay)
       } else {
-        debounceMap[key] = {
-          snapshotTree: treeFilter ? treeFilter(this.tree) : cloneJson(this.tree),
-          timerId: setTimeout(perform, delay)
+        debounceData = {
+          snapshotTree: this.treeFilter ? this.treeFilter(this.tree) : cloneJson(this.tree),
+          timerId: setTimeout(this.debounceExecute.bind(this), delay)
         }
       }
 
@@ -108,10 +93,28 @@ export default class JsonHistory {
         this.jsonDiffPatch.patch(this.tree, delta)
       }
     })
+  }
 
+  debounceExecute() {
+    if (!debounceData) {
+      return
+    }
+
+    const { timerId, snapshotTree } = debounceData
+    clearTimeout(timerId)
+    const currentTree = this.treeFilter ? this.treeFilter(this.tree) : cloneJson(this.tree)
+    const delta = this.jsonDiffPatch.diff(snapshotTree, currentTree)
+    if (delta) {
+      this.deltas.unshift([delta])
+      this.callback.onRecorded(this)
+      this.callback.onDeltasChanged(this)
+    }
+
+    debounceData = null
   }
 
   record(histories) {
+    this.debounceExecute()
     const group = []
     histories = toArray(histories)
 
@@ -138,6 +141,7 @@ export default class JsonHistory {
   }
 
   snapShot(histories) {
+    this.debounceExecute()
     const group = []
     const delta = this.jsonDiffPatch.diff(this.tree, histories)
 
@@ -155,6 +159,7 @@ export default class JsonHistory {
   }
 
   cleanOldUndo() {
+    this.debounceExecute()
     if (this.currentIndex > 0) {
       this.deltas = this.deltas.slice(this.currentIndex)
       this.currentIndex = 0
@@ -166,6 +171,7 @@ export default class JsonHistory {
   }
 
   redo() {
+    this.debounceExecute()
     if (this.canNotRedo) return
 
     const deltaGroup = this.nextRedoDeltaGroup.reverse()
@@ -173,7 +179,7 @@ export default class JsonHistory {
     this.callback.onRedo(deltaGroup)
 
     deltaGroup.forEach(delta => {
-      this.jsonDiffPatch.patch(this.tree, cloneJson(delta))
+      this.jsonDiffPatch.patch(this.tree, delta)
     })
 
     this.callback.onRedid(deltaGroup)
@@ -186,6 +192,7 @@ export default class JsonHistory {
   }
 
   undo() {
+    this.debounceExecute()
     if (this.canNotUndo) return
 
     const deltaGroup = this.nextUndoDeltaGroup
@@ -194,7 +201,7 @@ export default class JsonHistory {
     this.callback.onUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
-      this.jsonDiffPatch.unpatch(this.tree, cloneJson(delta))
+      this.jsonDiffPatch.unpatch(this.tree, delta)
     })
 
     this.callback.onUndid(deltaGroup)
@@ -202,6 +209,7 @@ export default class JsonHistory {
   }
 
   cleanDeltas(shouldDeleteFunction) {
+    this.debounceExecute()
     this.deltas.forEach((group, i) => {
 
       group.forEach((delta, ii) => {
@@ -211,7 +219,7 @@ export default class JsonHistory {
         }
       })
 
-      this.deltas[i] = group.filter(delta => cloneJson(delta))
+      this.deltas[i] = group.filter(delta => delta)
     })
 
 

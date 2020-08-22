@@ -90,6 +90,7 @@ describe('test history', () => {
       expect(history.deltas.length).toEqual(1)
       const saveState = JSON.parse(JSON.stringify(history.tree))
       history.undo()
+      console.log(history.tree)
       expect(history.tree).toEqual(tree)
       history.redo()
       expect(history.tree).toEqual(saveState)
