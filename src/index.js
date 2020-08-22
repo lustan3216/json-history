@@ -173,7 +173,7 @@ export default class JsonHistory {
     this.callback.onRedo(deltaGroup)
 
     deltaGroup.forEach(delta => {
-      this.jsonDiffPatch.patch(this.tree, delta)
+      this.jsonDiffPatch.patch(this.tree, cloneJson(delta))
     })
 
     this.callback.onRedid(deltaGroup)
