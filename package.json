@@ -1,7 +1,7 @@
 {
   "name": "json-history",
   "license": "MIT",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "scripts": {
     "test": "jest",
     "build": "webpack --config webpack.config.js"
@@ -35,3 +35,4 @@
     "redo"
   ]
 }
+

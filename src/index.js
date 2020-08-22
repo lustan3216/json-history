@@ -194,7 +194,7 @@ export default class JsonHistory {
     this.callback.onUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
-      this.jsonDiffPatch.unpatch(this.tree, delta)
+      this.jsonDiffPatch.unpatch(this.tree, cloneJson(delta))
     })
 
     this.callback.onUndid(deltaGroup)
@@ -211,7 +211,7 @@ export default class JsonHistory {
         }
       })
 
-      this.deltas[i] = group.filter(delta => delta)
+      this.deltas[i] = group.filter(delta => cloneJson(delta))
     })
 
 
