@@ -117,7 +117,7 @@ export default class JsonHistory {
   }
 
   groupBindTime(group) {
-    return { group, created: +new Date }
+    return { group, createdAt: +new Date }
   }
 
   record(histories) {
