@@ -107,12 +107,17 @@ export default class JsonHistory {
 
     if (delta) {
       this._cleanOldUndo()
-      this.deltas.unshift([delta])
+      const group = this.groupBindTime([delta])
+      this.deltas.unshift(group)
       this.callback.onRecorded(this)
       this.callback.onDeltasChanged(this)
     }
 
     debounceData = null
+  }
+
+  groupBindTime(group) {
+    return { group, created: +new Date }
   }
 
   record(histories) {
@@ -134,7 +139,7 @@ export default class JsonHistory {
     })
 
     if (group.length) {
-      this.deltas.unshift(group)
+      this.deltas.unshift(this.groupBindTime(group))
       this.callback.onRecorded(this)
       this.callback.onDeltasChanged(this)
     }
@@ -153,7 +158,7 @@ export default class JsonHistory {
     }
 
     if (group.length) {
-      this.deltas.unshift(group)
+      this.deltas.unshift(this.groupBindTime(group))
       this.callback.onRecorded(this)
     }
 
@@ -175,7 +180,7 @@ export default class JsonHistory {
     this.debounceExecute()
     if (this.canNotRedo) return
 
-    const deltaGroup = this.nextRedoDeltaGroup.reverse()
+    const deltaGroup = this.nextRedoDeltaGroup.group.reverse()
     this.currentIndex--
     this.callback.onRedo(deltaGroup)
 
@@ -196,7 +201,7 @@ export default class JsonHistory {
     this.debounceExecute()
     if (this.canNotUndo) return
 
-    const deltaGroup = this.nextUndoDeltaGroup
+    const deltaGroup = this.nextUndoDeltaGroup.group
     this.currentIndex++
 
     this.callback.onUndo(deltaGroup)
@@ -211,7 +216,7 @@ export default class JsonHistory {
 
   cleanDeltas(shouldDeleteFunction) {
     this.debounceExecute()
-    this.deltas.forEach((group, i) => {
+    this.deltas.forEach(({ group }, i) => {
 
       group.forEach((delta, ii) => {
         const shouldDelete = shouldDeleteFunction(delta)
@@ -220,18 +225,18 @@ export default class JsonHistory {
         }
       })
 
-      this.deltas[i] = group.filter(delta => delta)
+      const newGroup = group.filter(delta => delta)
+      this.deltas[i] = this.groupBindTime(newGroup)
     })
-
 
     let availableIndex = 0
     for (let i = 0; i === this.currentIndex; i++) {
-      if (this.deltas[i] && this.deltas[i].length) {
+      if (this.deltas[i] && this.deltas[i].group.length) {
         availableIndex++
       }
     }
 
-    this.deltas = this.deltas.filter(group => group.length)
+    this.deltas = this.deltas.filter(({ group }) => group.length)
     this.currentIndex = availableIndex
     this.callback.onDeltasCleaned(this)
   }
