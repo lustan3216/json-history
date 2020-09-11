@@ -3,7 +3,7 @@ import { toArray, cloneJson } from './utils'
 import { createDelta } from './createDelta'
 
 let debounceData = null
-
+let debounceExecutedCallbackResolve = null
 export default class JsonHistory {
 
   constructor({ tree = {}, treeFilter = null, steps = 50, backUpDeltas = [], callback = {}, setter, deleter} = {}) {
@@ -15,28 +15,38 @@ export default class JsonHistory {
     this.tree = tree
     this.steps = steps
     this.treeFilter = treeFilter
-    this.jsonDiffPatch = JsonDiffPatch.create({ setter, deleter })
+    this.jsonDiffPatch = JsonDiffPatch.create({setter, deleter})
     this.callback = {
-      onRecorded() {},
-      onDeltasChanged() {},
-      onDeltasCleaned() {},
-      onUndo() {},
-      onUndid() {},
-      onRedo() {},
-      onRedid() {},
+      onTreeChanged() {
+      },
+      onDeltasChanged() {
+      },
+      onDeltasCleaned() {
+      },
+      beforeUndo() {
+      },
+      beforeRedo() {
+      },
+      onUndid() {
+      },
+      onRedid() {
+      },
       ...callback
     }
   }
 
-  get nextUndoDeltaGroup() {
-    return this.deltas[this.currentIndex]
+  createDelta(history) {
+    return createDelta(this.jsonDiffPatch, this.tree, history)
   }
 
-  get nextRedoDeltaGroup() {
-    return this.deltas[this.currentIndex - 1]
+  patch(delta) {
+    this.jsonDiffPatch.patch(this.tree, delta)
   }
 
   recordsMerge(fn) {
+    // 只有搭配RECORD用而已，debounceRecord已經是曲段時間的merge
+    this.debounceExecute()
+
     const oldLength = this.deltas.length
     const temp = this.callback.onDeltasChanged
     this.callback.onDeltasChanged = function(){}
@@ -88,10 +98,17 @@ export default class JsonHistory {
         }
       }
 
-      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+      const delta = this.createDelta(history)
       if (delta) {
-        this.jsonDiffPatch.patch(this.tree, delta)
+        this.patch(delta)
       }
+    })
+  }
+
+  debounceExecutedCallback(fn) {
+    return new Promise((resolve, reject) => {
+      fn()
+      debounceExecutedCallbackResolve = resolve
     })
   }
 
@@ -109,15 +126,24 @@ export default class JsonHistory {
       this._cleanOldUndo()
       const group = this.groupBindTime([delta])
       this.deltas.unshift(group)
-      this.callback.onRecorded(this)
+      this.callback.onTreeChanged(this)
       this.callback.onDeltasChanged(this)
     }
 
+    if (debounceExecutedCallbackResolve) {
+      debounceExecutedCallbackResolve(delta)
+      debounceExecutedCallbackResolve = null
+    }
     debounceData = null
   }
 
   groupBindTime(group) {
     return { group, createdAt: +new Date }
+  }
+
+  irreversibleRecord(histories) {
+    this.record(histories)
+    this.deltas[0].irreversible = true
   }
 
   record(histories) {
@@ -126,21 +152,22 @@ export default class JsonHistory {
     histories = toArray(histories)
 
     histories.forEach(history => {
-      const delta = createDelta(this.jsonDiffPatch, this.tree, history)
+      const delta = this.createDelta(history)
 
       if (delta) {
         this._cleanOldUndo()
         if (this.deltas.length > this.steps) {
           group.pop()
         }
+
         group.unshift(delta)
-        this.jsonDiffPatch.patch(this.tree, delta)
+        this.patch(delta)
       }
     })
 
     if (group.length) {
       this.deltas.unshift(this.groupBindTime(group))
-      this.callback.onRecorded(this)
+      this.callback.onTreeChanged(this)
       this.callback.onDeltasChanged(this)
     }
 
@@ -159,7 +186,7 @@ export default class JsonHistory {
 
     if (group.length) {
       this.deltas.unshift(this.groupBindTime(group))
-      this.callback.onRecorded(this)
+      this.callback.onTreeChanged(this)
     }
 
     return this.tree
@@ -176,19 +203,31 @@ export default class JsonHistory {
     return this.currentIndex < 1
   }
 
-  redo() {
-    this.debounceExecute()
+  getNextRedoDeltaGroup() {
     if (this.canNotRedo) return
 
-    const deltaGroup = this.nextRedoDeltaGroup.group.reverse()
     this.currentIndex--
-    this.callback.onRedo(deltaGroup)
+    const group = this.deltas[this.currentIndex]
+    if (group.irreversible) {
+      return this.getNextRedoDeltaGroup()
+    }
+    return group.group.reverse()
+  }
+
+  redo() {
+    this.debounceExecute()
+
+    const deltaGroup = this.getNextRedoDeltaGroup()
+    if (!deltaGroup) return
+
+    this.callback.beforeRedo(deltaGroup)
 
     deltaGroup.forEach(delta => {
-      this.jsonDiffPatch.patch(this.tree, delta)
+      this.patch(delta)
     })
 
     this.callback.onRedid(deltaGroup)
+    this.callback.onTreeChanged(this)
     return this.tree
   }
 
@@ -197,20 +236,31 @@ export default class JsonHistory {
     return this.currentIndex > maxIndex
   }
 
-  undo() {
-    this.debounceExecute()
+  getNextUndoDeltaGroup() {
     if (this.canNotUndo) return
 
-    const deltaGroup = this.nextUndoDeltaGroup.group
+    const group = this.deltas[this.currentIndex]
     this.currentIndex++
+    if (group.irreversible) {
+      return this.getNextUndoDeltaGroup()
+    }
+    return group.group
+  }
 
-    this.callback.onUndo(deltaGroup)
+  undo() {
+    this.debounceExecute()
+
+    const deltaGroup = this.getNextUndoDeltaGroup()
+    if (!deltaGroup) return
+
+    this.callback.beforeUndo(deltaGroup)
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.unpatch(this.tree, delta)
     })
 
     this.callback.onUndid(deltaGroup)
+    this.callback.onTreeChanged(this)
     return this.tree
   }
 
