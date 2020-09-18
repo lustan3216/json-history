@@ -1,9 +1,11 @@
 import JsonDiffPatch from '../vendor/jsonDiffPatch'
-import { toArray, cloneJson } from './utils'
+import { toArray, cloneJson, objectFirstKey } from './utils'
 import { createDelta } from './createDelta'
+import DeltaKeyStore from './deltaKeyStore'
 
 let debounceData = null
 let debounceExecutedCallbackResolve = null
+const deltaKeyStore = new DeltaKeyStore()
 export default class JsonHistory {
 
   constructor({ tree = {}, treeFilter = null, steps = 50, backUpDeltas = [], callback = {}, setter, deleter} = {}) {
@@ -100,6 +102,7 @@ export default class JsonHistory {
 
       const delta = this.createDelta(history)
       if (delta) {
+        deltaKeyStore.add(delta)
         this.patch(delta)
         this.callback.onTreeChanged(delta)
       }
@@ -121,7 +124,13 @@ export default class JsonHistory {
     const { timerId, snapshotTree } = debounceData
     clearTimeout(timerId)
     const currentTree = this.treeFilter ? this.treeFilter(this.tree) : cloneJson(this.tree)
-    const delta = this.jsonDiffPatch.diff(snapshotTree, currentTree)
+
+    const delta = this.jsonDiffPatch.diff(
+      deltaKeyStore.filter(snapshotTree),
+      deltaKeyStore.filter(currentTree)
+    )
+
+    deltaKeyStore.reset()
 
     if (delta) {
       this._cleanOldUndo()

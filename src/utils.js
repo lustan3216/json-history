@@ -52,3 +52,7 @@ export function toArrayKey(key) {
     return result[1]
   }
 }
+
+export function objectFirstKey(e) {
+  return Object.keys(e)[0]
+}
