@@ -101,6 +101,7 @@ export default class JsonHistory {
       const delta = this.createDelta(history)
       if (delta) {
         this.patch(delta)
+        this.callback.onTreeChanged(delta)
       }
     })
   }
@@ -126,7 +127,6 @@ export default class JsonHistory {
       this._cleanOldUndo()
       const group = this.groupBindTime([delta])
       this.deltas.unshift(group)
-      this.callback.onTreeChanged(this)
       this.callback.onDeltasChanged(this)
     }
 
@@ -155,6 +155,7 @@ export default class JsonHistory {
       const delta = this.createDelta(history)
 
       if (delta) {
+        this.callback.onTreeChanged(delta)
         this._cleanOldUndo()
         if (this.deltas.length > this.steps) {
           group.pop()
@@ -167,7 +168,6 @@ export default class JsonHistory {
 
     if (group.length) {
       this.deltas.unshift(this.groupBindTime(group))
-      this.callback.onTreeChanged(this)
       this.callback.onDeltasChanged(this)
     }
 
@@ -186,7 +186,6 @@ export default class JsonHistory {
 
     if (group.length) {
       this.deltas.unshift(this.groupBindTime(group))
-      this.callback.onTreeChanged(this)
     }
 
     return this.tree
@@ -224,10 +223,10 @@ export default class JsonHistory {
 
     deltaGroup.forEach(delta => {
       this.patch(delta)
+      this.callback.onTreeChanged(delta)
     })
 
     this.callback.onRedid(deltaGroup)
-    this.callback.onTreeChanged(this)
     return this.tree
   }
 
@@ -257,10 +256,10 @@ export default class JsonHistory {
 
     deltaGroup.forEach(delta => {
       this.jsonDiffPatch.unpatch(this.tree, delta)
+      this.callback.onTreeChanged(delta)
     })
 
     this.callback.onUndid(deltaGroup)
-    this.callback.onTreeChanged(this)
     return this.tree
   }
 

@@ -9,7 +9,7 @@ import { stop, aBugHere, done, DONE, STOP } from './error'
 
 export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray = false }) {
   const newValue = cloneJson(value)
-  const arrayPath = pathStringSplit(path)
+  const arrayPath = isArray(path) ? path : pathStringSplit(path)
   const isArrayKeyArray = isArrayKeyPathArray(arrayPath)
   const normalizedPathArray = toNormalizedPath(arrayPath)
 
