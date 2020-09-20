@@ -10,7 +10,7 @@ export function pathStringSplit(path) {
 
 export function isArrayKeyPathArray(pathArray) {
   // [false, false, true, false, true]
-  return pathArray.map(key => Boolean(key.match(/\[(\d+)\]/)))
+  return pathArray.map(key => Boolean(key.toString().match(/\[(\d+)\]/)))
 }
 
 export function toNormalizedPath(path) {

@@ -111,7 +111,7 @@ describe('test history', () => {
 
     test('a[1] = { f: 5 }', () => {
       history.record([{
-        path: 'a[1]',
+        path: ['a', '[1]'],
         value: {f: 5}
       }])
 
@@ -124,7 +124,7 @@ describe('test history', () => {
 
     test('a[1][3] = 5', () => {
       history.record([{
-        path: 'a[1][3]',
+        path: ['a', '[1]', '[3]'],
         value: 5
       }])
       expect(history.tree).toEqual({
@@ -200,7 +200,7 @@ describe('test history', () => {
 
     test('1.a.b = 2', () => {
       history.record([{
-        path: '1.a.b',
+        path: ['1', 'a', 'b'],
         value: 2
       }])
 
