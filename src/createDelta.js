@@ -134,13 +134,8 @@ export function createDelta(jsonDiffPatch, tree, { path = '', value, insertArray
               if (oldValue === newValue) {
                 stop()
               } else if (isArray(oldValue) && isArray(newValue)) {
-                // 'a = oldValue newArray [1,2,3] 直接用diff生delta
-                const diff = jsonDiffPatch.diff(oldValue, newValue)
-                if (diff) {
-                  final[key] = diff
-                } else {
-                  stop()
-                }
+                // 不比較array了，直接整個舊換新
+                final[key] = [oldValue, newValue]
               } else {
                 final[key] = deepDiffDelta([oldValue, newValue])
               }
