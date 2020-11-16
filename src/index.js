@@ -155,6 +155,21 @@ export default class JsonHistory {
     this.deltas[0].irreversible = true
   }
 
+  softRecord(histories) {
+    this.debounceExecute()
+    histories = toArray(histories)
+
+    histories.forEach(history => {
+      const delta = this.createDelta(history)
+
+      if (delta) {
+        this.patch(delta)
+      }
+    })
+
+    return this.tree
+  }
+
   record(histories) {
     this.debounceExecute()
     const group = []
