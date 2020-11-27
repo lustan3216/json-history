@@ -1,22 +1,3 @@
-/* istanbul ignore file */
-import dmp from 'diff-match-patch';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -1237,147 +1218,14 @@ var diffFilter$2 = function datesDiffFilter(context) {
 };
 diffFilter$2.filterName = 'dates';
 
-/* global diff_match_patch */
-var TEXT_DIFF = 2;
-var DEFAULT_MIN_LENGTH = 60;
-var cachedDiffPatch = null;
-
-var getDiffMatchPatch = function getDiffMatchPatch(required) {
-  /* jshint camelcase: false */
-
-  if (!cachedDiffPatch) {
-    var instance = void 0;
-    /* eslint-disable camelcase, new-cap */
-    if (typeof diff_match_patch !== 'undefined') {
-      // already loaded, probably a browser
-      instance = typeof diff_match_patch === 'function' ? new diff_match_patch() : new diff_match_patch.diff_match_patch();
-    } else if (dmp) {
-      try {
-        instance = dmp && new dmp();
-      } catch (err) {
-        instance = null;
-      }
-    }
-    /* eslint-enable camelcase, new-cap */
-    if (!instance) {
-      if (!required) {
-        return null;
-      }
-      var error = new Error('text diff_match_patch library not found');
-      // eslint-disable-next-line camelcase
-      error.diff_match_patch_not_found = true;
-      throw error;
-    }
-    cachedDiffPatch = {
-      diff: function diff(txt1, txt2) {
-        return instance.patch_toText(instance.patch_make(txt1, txt2));
-      },
-      patch: function patch(txt1, _patch) {
-        var results = instance.patch_apply(instance.patch_fromText(_patch), txt1);
-        for (var i = 0; i < results[1].length; i++) {
-          if (!results[1][i]) {
-            var _error = new Error('text patch failed');
-            _error.textPatchFailed = true;
-          }
-        }
-        return results[0];
-      }
-    };
-  }
-  return cachedDiffPatch;
-};
-
-var diffFilter$3 = function textsDiffFilter(context) {
-  if (context.leftType !== 'string') {
-    return;
-  }
-  var minLength = context.options && context.options.textDiff && context.options.textDiff.minLength || DEFAULT_MIN_LENGTH;
-  if (context.left.length < minLength || context.right.length < minLength) {
-    context.setResult([context.left, context.right]).exit();
-    return;
-  }
-  // large text, try to use a text-diff algorithm
-  var diffMatchPatch = getDiffMatchPatch();
-  if (!diffMatchPatch) {
-    // diff-match-patch library not available,
-    // fallback to regular string replace
-    context.setResult([context.left, context.right]).exit();
-    return;
-  }
-  var diff = diffMatchPatch.diff;
-  context.setResult([diff(context.left, context.right), 0, TEXT_DIFF]).exit();
-};
-diffFilter$3.filterName = 'texts';
-
-var patchFilter$3 = function textsPatchFilter(context) {
-  if (context.nested) {
-    return;
-  }
-  if (context.delta[2] !== TEXT_DIFF) {
-    return;
-  }
-
-  // text-diff, use a text-patch algorithm
-  var patch = getDiffMatchPatch(true).patch;
-  context.setResult(patch(context.left, context.delta[0])).exit();
-};
-patchFilter$3.filterName = 'texts';
-
-var textDeltaReverse = function textDeltaReverse(delta) {
-  var i = void 0;
-  var l = void 0;
-  var lines = void 0;
-  var line = void 0;
-  var lineTmp = void 0;
-  var header = null;
-  var headerRegex = /^@@ +-(\d+),(\d+) +\+(\d+),(\d+) +@@$/;
-  var lineHeader = void 0;
-  lines = delta.split('\n');
-  for (i = 0, l = lines.length; i < l; i++) {
-    line = lines[i];
-    var lineStart = line.slice(0, 1);
-    if (lineStart === '@') {
-      header = headerRegex.exec(line);
-      lineHeader = i;
-
-      // fix header
-      lines[lineHeader] = '@@ -' + header[3] + ',' + header[4] + ' +' + header[1] + ',' + header[2] + ' @@';
-    } else if (lineStart === '+') {
-      lines[i] = '-' + lines[i].slice(1);
-      if (lines[i - 1].slice(0, 1) === '+') {
-        // swap lines to keep default order (-+)
-        lineTmp = lines[i];
-        lines[i] = lines[i - 1];
-        lines[i - 1] = lineTmp;
-      }
-    } else if (lineStart === '-') {
-      lines[i] = '+' + lines[i].slice(1);
-    }
-  }
-  return lines.join('\n');
-};
-
-var reverseFilter$3 = function textsReverseFilter(context) {
-  if (context.nested) {
-    return;
-  }
-  if (context.delta[2] !== TEXT_DIFF) {
-    return;
-  }
-
-  // text-diff, use a text-diff algorithm
-  context.setResult([textDeltaReverse(context.delta[0]), 0, TEXT_DIFF]).exit();
-};
-reverseFilter$3.filterName = 'texts';
-
 var DiffPatcher = function () {
   function DiffPatcher(options) {
     classCallCheck(this, DiffPatcher);
 
     this.processor = new Processor(options);
-    this.processor.pipe(new Pipe('diff').append(collectChildrenDiffFilter, diffFilter, diffFilter$2, diffFilter$3, objectsDiffFilter, diffFilter$1).shouldHaveResult());
-    this.processor.pipe(new Pipe('patch').append(collectChildrenPatchFilter, collectChildrenPatchFilter$1, patchFilter, patchFilter$3, patchFilter$1, patchFilter$2).shouldHaveResult());
-    this.processor.pipe(new Pipe('reverse').append(collectChildrenReverseFilter, collectChildrenReverseFilter$1, reverseFilter, reverseFilter$3, reverseFilter$1, reverseFilter$2).shouldHaveResult());
+    this.processor.pipe(new Pipe('diff').append(collectChildrenDiffFilter, diffFilter, diffFilter$2, objectsDiffFilter, diffFilter$1).shouldHaveResult());
+    this.processor.pipe(new Pipe('patch').append(collectChildrenPatchFilter, collectChildrenPatchFilter$1, patchFilter, patchFilter$1, patchFilter$2).shouldHaveResult());
+    this.processor.pipe(new Pipe('reverse').append(collectChildrenReverseFilter, collectChildrenReverseFilter$1, reverseFilter, reverseFilter$1, reverseFilter$2).shouldHaveResult());
   }
 
   createClass(DiffPatcher, [{
